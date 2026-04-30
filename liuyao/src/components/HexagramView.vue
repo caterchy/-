@@ -17,7 +17,7 @@ const props = defineProps<{
     <div class="bg-[#faf5eb] border-2 border-[#8b7355] rounded-lg p-4 inline-block relative">
       <!-- 变爻标记 -->
       <div v-if="gua.yaos.some(y => y.yao.changing)" class="absolute -top-2 -right-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full shadow">
-        有变爻
+        动爻
       </div>
       <!-- 显示卦象: 从下到上, 但视觉上上卦在上 -->
       <div class="flex flex-col-reverse items-center gap-0">

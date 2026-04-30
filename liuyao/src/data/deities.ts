@@ -1,4 +1,5 @@
 import type { TianGan, DiZhi, LiuShen, ShenShaType, WangShuai, WuXing } from '../types'
+import { ZHI_WU_XING } from './bazi'
 
 /**
  * 六神安放规则: 按日柱天干定
@@ -180,8 +181,6 @@ export const SHEN_SHA_RULES: Record<ShenShaType, {
  * 旺相休囚死: 根据月地支判断某五行的旺衰状态
  * 当令者旺, 我生者相, 生我者休, 克我者囚, 我克者死
  */
-import { ZHI_WU_XING } from './bazi'
-
 export function getWangShuai(wuxing: WuXing, monthZhi: DiZhi): WangShuai {
   const monthWuxing = ZHI_WU_XING[monthZhi]
   if (wuxing === monthWuxing) return '旺'

@@ -14,9 +14,9 @@ Vue 3 + TypeScript + Vite 构建的六爻纳甲筮法排盘工具，支持手动
 | 视图层 | ✅ 完成 | |
 | TypeScript 类型检查 (`vue-tsc --noEmit`) | ✅ 通过 | 零错误 |
 | 生产构建 (`npm run build`) | ✅ 通过 | |
-| 备注功能（UI） | ⬜ 待实现 | 数据层 `note` 字段已存在 |
-| Git 版本管理 | ⬜ 待初始化 | |
-| 设计文档（README） | ⬜ 待编写 | 仍为默认 Vite 模板 |
+| 备注功能（UI） | ✅ 已完成 | 起卦后弹窗输入 + 结果页查看/编辑 |
+| Git 版本管理 | ✅ 已完成 | 首次提交 `31307fa` |
+| 设计文档（README） | ✅ 已完成 | 完整项目设计文档 |
 
 ## 已完成工作
 
@@ -28,16 +28,14 @@ Vue 3 + TypeScript + Vite 构建的六爻纳甲筮法排盘工具，支持手动
 - 逐文件移除所有未使用的 import 和变量
 - `HexagramView.vue`、`bazi.ts`、`engine/bazi.ts`、`fanyin.ts`、`paipan.ts`、`sanhe.ts`、`HomeView.vue`、`HistoryView.vue` 均已完成清理
 
-## 剩余任务
+## 全部任务已完成 ✅
 
-### 高优先级
-1. **Git 初始化** — 建立版本管理
-2. **设计文档** — 重写 `README.md`，包含项目说明、架构、使用方式
+所有 14 项任务均已完成，构建零错误通过（`vue-tsc` + `vite build`）。
 
-### 功能改进
-3. **备注 UI** — `PaipanResult.note` 字段已存在，需补充：
-   - `HomeView.vue`：起卦后弹出备注输入框
-   - `ResultView.vue`：显示和编辑备注
+### 本次完成内容
+1. **Git 版本管理** — 首次提交 `31307fa`，配置本地用户 caternae
+2. **设计文档** — 重写 `README.md`，完整覆盖项目说明、架构、使用方式
+3. **备注功能** — 起卦后弹窗输入备注 + 结果页查看/编辑，数据持久化至 localStorage
 
-### 部署（可选）
-4. **静态部署** — 构建产物可直接部署至任意静态服务器
+### 后续建议
+- **静态部署** — 构建产物在 `dist/` 目录，可直接部署到任意静态服务器

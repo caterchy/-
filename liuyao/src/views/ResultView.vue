@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePaipanStore } from '../stores/paipan'
 import DateTimeInfo from '../components/DateTimeInfo.vue'
@@ -14,8 +14,29 @@ const store = usePaipanStore()
 const result = computed(() => store.currentResult)
 const displayOptions = computed(() => store.displayOptions)
 
+const editingNote = ref(false)
+const editNoteText = ref('')
+
 function goBack() {
   router.push('/')
+}
+
+function startEditNote() {
+  if (result.value?.note) {
+    editNoteText.value = result.value.note
+  } else {
+    editNoteText.value = ''
+  }
+  editingNote.value = true
+}
+
+function saveNote() {
+  store.updateNote(editNoteText.value.trim())
+  editingNote.value = false
+}
+
+function cancelEditNote() {
+  editingNote.value = false
 }
 
 function copyShareLink() {
@@ -88,6 +109,48 @@ function downloadJson() {
     <div v-if="displayOptions.showFanyin && result.fanyin" class="bg-orange-50 border border-orange-200 rounded-lg p-3">
       <span class="font-bold text-orange-700">{{ result.fanyin.type }}:</span>
       <span class="ml-2">{{ result.fanyin.description }}</span>
+    </div>
+
+    <!-- 备注 -->
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+      <div class="flex items-center justify-between">
+        <span class="font-bold text-amber-700">备注</span>
+        <button
+          v-if="!editingNote"
+          @click="startEditNote"
+          class="text-xs text-amber-600 hover:text-amber-800 underline"
+        >
+          {{ result.note ? '编辑' : '添加' }}
+        </button>
+      </div>
+      <!-- 查看模式 -->
+      <p v-if="!editingNote && result.note" class="mt-1 text-sm text-gray-700 whitespace-pre-wrap">{{ result.note }}</p>
+      <p v-if="!editingNote && !result.note" class="mt-1 text-sm text-gray-400 italic">暂无备注</p>
+      <!-- 编辑模式 -->
+      <div v-if="editingNote" class="mt-1">
+        <textarea
+          v-model="editNoteText"
+          placeholder="添加备注..."
+          class="w-full border border-amber-300 rounded-lg p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+          rows="3"
+          maxlength="500"
+        ></textarea>
+        <div class="text-right text-xs text-gray-400 mt-1">{{ editNoteText.length }}/500</div>
+        <div class="flex gap-2 mt-2">
+          <button
+            @click="cancelEditNote"
+            class="flex-1 border border-gray-300 text-gray-600 py-1.5 rounded text-xs hover:bg-gray-50 transition-colors"
+          >
+            取消
+          </button>
+          <button
+            @click="saveNote"
+            class="flex-1 bg-amber-600 text-white py-1.5 rounded text-xs font-bold hover:bg-amber-700 transition-colors"
+          >
+            保存
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 排盘表 -->

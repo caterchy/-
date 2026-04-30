@@ -78,6 +78,14 @@ export const usePaipanStore = defineStore('paipan', () => {
     return history.value.find(h => h.id === id)
   }
 
+  /** 更新当前结果的备注 */
+  function updateNote(note: string) {
+    if (currentResult.value) {
+      currentResult.value = { ...currentResult.value, note }
+      saveToHistory(currentResult.value)
+    }
+  }
+
   /** 更新显示选项 */
   function updateDisplayOptions(options: Partial<DisplayOptions>) {
     displayOptions.value = { ...displayOptions.value, ...options }
@@ -95,6 +103,7 @@ export const usePaipanStore = defineStore('paipan', () => {
     historyCount,
     setResult,
     saveToHistory,
+    updateNote,
     deleteHistory,
     clearHistory,
     getHistoryById,

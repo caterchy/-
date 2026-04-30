@@ -92,12 +92,12 @@ const WANG_SHUAI_COLORS: Record<string, string> = {
               {{ y.wangshuai }}
             </span>
           </td>
-          <td class="px-2 py-1.5 border border-gray-300 text-xs">
+          <td v-if="displayOptions.showShensha" class="px-2 py-1.5 border border-gray-300 text-xs">
             <span v-for="s in y.shensha" :key="s" class="inline-block bg-purple-100 text-purple-700 px-1 rounded mr-0.5">
               {{ s }}
             </span>
           </td>
-          <td class="px-2 py-1.5 border border-gray-300">
+          <td v-if="displayOptions.showKongwang" class="px-2 py-1.5 border border-gray-300">
             <span v-if="y.isEmpty" class="text-red-500 font-bold">空</span>
             <span v-else class="text-gray-300">—</span>
           </td>

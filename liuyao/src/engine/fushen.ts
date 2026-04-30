@@ -1,6 +1,6 @@
 import type { BaGua, YaoDetail, FuShen } from '../types'
 import { ALL_HEXAGRAMS } from '../data/hexagrams'
-import { GUA_NA_GAN, GUA_NA_ZHI, ZHI_WU_XING_NAJA } from '../data/naja'
+import { GUA_NA_ZHI, ZHI_WU_XING_NAJA } from '../data/naja'
 import { GUA_WU_XING } from '../data/bazi'
 import { getLiuQin } from './liuqin'
 
@@ -13,8 +13,6 @@ export function calcFuShen(palace: BaGua, yaos: YaoDetail[]): FuShen[] {
   if (!palaceHex) return []
 
   const gongWuxing = GUA_WU_XING[palaceHex.palace]
-  const ganInner = GUA_NA_GAN[palaceHex.lower].inner
-  const ganOuter = GUA_NA_GAN[palaceHex.upper].outer
   const zhiInner = GUA_NA_ZHI[palaceHex.lower].inner
   const zhiOuter = GUA_NA_ZHI[palaceHex.upper].outer
   const allZhis = [...zhiInner, ...zhiOuter]
