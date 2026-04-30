@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-yang: #d32f2f;
+  --color-yin: #1565c0;
+  --color-gua-bg: #faf5eb;
+  --color-gua-border: #8b7355;
+  --color-accent: #8b0000;
+  --color-text-main: #2c2c2c;
+  --color-text-secondary: #666;
+}
+
+body {
+  margin: 0;
+  background: #f5f0e8;
+  color: var(--color-text-main);
+  font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+}
+
+#app {
+  min-height: 100svh;
+}

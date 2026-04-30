@@ -1,0 +1,186 @@
+/** 十天干 */
+export type TianGan = '甲' | '乙' | '丙' | '丁' | '戊' | '己' | '庚' | '辛' | '壬' | '癸'
+
+/** 十二地支 */
+export type DiZhi = '子' | '丑' | '寅' | '卯' | '辰' | '巳' | '午' | '未' | '申' | '酉' | '戌' | '亥'
+
+/** 五行 */
+export type WuXing = '金' | '木' | '水' | '火' | '土'
+
+/** 八卦 */
+export type BaGua = '乾' | '兑' | '离' | '震' | '巽' | '坎' | '艮' | '坤'
+
+/** 卦宫 */
+export type GuaGong = BaGua
+
+/** 爻的阴阳状态 */
+export type YaoType = '少阳' | '少阴' | '老阳' | '老阴'
+
+/** 六亲 */
+export type LiuQin = '父母' | '兄弟' | '官鬼' | '妻财' | '子孙'
+
+/** 六神 */
+export type LiuShen = '青龙' | '朱雀' | '勾陈' | '腾蛇' | '白虎' | '玄武'
+
+/** 神煞 */
+export type ShenShaType = '天乙贵人' | '驿马' | '桃花' | '劫煞' | '亡神' | '禄神' | '羊刃' | '文昌' | '华盖'
+
+/** 旺相休囚死 */
+export type WangShuai = '旺' | '相' | '休' | '囚' | '死'
+
+/** 伏神信息 */
+export interface FuShen {
+  /** 伏神六亲 */
+  liuqin: LiuQin
+  /** 伏神地支 */
+  zhi: DiZhi
+  /** 伏神五行 */
+  wuxing: WuXing
+}
+
+/** 单个爻 */
+export interface Yao {
+  /** 阴阳: true=阳, false=阴 */
+  yang: boolean
+  /** 是否变爻 */
+  changing: boolean
+  /** 爻类型 */
+  type: YaoType
+}
+
+/** 纳甲干支 */
+export interface Najia {
+  gan: TianGan
+  zhi: DiZhi
+}
+
+/** 单个爻位的完整排盘信息 */
+export interface YaoDetail {
+  /** 爻位: 初, 二, 三, 四, 五, 上 */
+  position: number
+  /** 爻象 */
+  yao: Yao
+  /** 纳甲干支 */
+  najia: Najia
+  /** 五行 */
+  wuxing: WuXing
+  /** 六亲 */
+  liuqin: LiuQin
+  /** 六神 */
+  liushou: LiuShen
+  /** 是否世爻 */
+  isShi: boolean
+  /** 是否应爻 */
+  isYing: boolean
+  /** 是否空亡 */
+  isEmpty: boolean
+  /** 神煞列表 */
+  shensha: ShenShaType[]
+  /** 伏神 */
+  fushen?: FuShen
+  /** 月建旺衰 */
+  wangshuai?: WangShuai
+}
+
+/** 四柱中的一柱 */
+export interface Zhu {
+  gan: TianGan
+  zhi: DiZhi
+  wuxing: WuXing
+}
+
+/** 八字 */
+export interface BaZi {
+  nian: Zhu
+  yue: Zhu
+  ri: Zhu
+  shi: Zhu
+}
+
+/** 完整卦象 */
+export interface GuaDetail {
+  /** 卦名 */
+  name: string
+  /** 上卦 */
+  upper: BaGua
+  /** 下卦 */
+  lower: BaGua
+  /** 卦宫 */
+  gong: GuaGong
+  /** 卦宫五行 */
+  gongWuxing: WuXing
+  /** 卦辞 */
+  guaci: string
+  /** 六个爻的完整信息，从初爻(0)到上爻(5) */
+  yaos: YaoDetail[]
+  /** 世爻位置 (1-6) */
+  shiPosition: number
+  /** 应爻位置 (1-6) */
+  yingPosition: number
+}
+
+/** 三合局 */
+export interface SanHe {
+  /** 三合局名称 */
+  name: string
+  /** 五行 */
+  wuxing: WuXing
+  /** 参与的地支 */
+  zhis: [DiZhi, DiZhi, DiZhi]
+  /** 参与的爻位 */
+  positions: number[]
+}
+
+/** 反吟伏吟 */
+export interface FanYinFuYin {
+  type: '反吟' | '伏吟'
+  description: string
+}
+
+/** 空亡信息 */
+export interface KongWang {
+  /** 所属旬 */
+  xun: string
+  /** 空亡的两个地支 */
+  zhi1: DiZhi
+  zhi2: DiZhi
+}
+
+/** 神煞标注（按爻位） */
+export interface ShenShaMark {
+  position: number
+  type: ShenShaType
+}
+
+/** 完整排盘结果 */
+export interface PaipanResult {
+  /** 唯一标识 */
+  id: string
+  /** 起卦时间 */
+  timestamp: Date
+  /** 四柱八字 */
+  bazi: BaZi
+  /** 本卦 */
+  original: GuaDetail
+  /** 变卦（如果有动爻） */
+  changed?: GuaDetail
+  /** 空亡 */
+  kongwang: KongWang
+  /** 三合局（可选） */
+  sanhe?: SanHe
+  /** 反吟伏吟（可选） */
+  fanyin?: FanYinFuYin
+  /** 备注 */
+  note?: string
+}
+
+/** 显示开关配置 */
+export interface DisplayOptions {
+  showSanhe: boolean
+  showGuaci: boolean
+  showFanyin: boolean
+  showShensha: boolean
+  showKongwang: boolean
+  showFuShen: boolean
+  showWangShuai: boolean
+}
