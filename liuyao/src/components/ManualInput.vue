@@ -26,7 +26,7 @@ const confirmed = ref(false)
 
 const currentSelection = computed(() => selections.value[currentStep.value])
 
-const allDone = computed(() => currentStep.value >= 6 && confirmed.value)
+const allDone = computed(() => confirmed.value)
 
 function selectOption(idx: number) {
   if (currentStep.value >= 6) return
@@ -51,6 +51,12 @@ function resetAll() {
   confirmed.value = false
 }
 
+function randomFill() {
+  selections.value = Array.from({ length: 6 }, () => Math.floor(Math.random() * 4))
+  currentStep.value = 6
+  confirmed.value = true
+}
+
 function submit() {
   const yaos: Yao[] = selections.value.map(idx => ({
     yang: OPTIONS[idx].yang,
@@ -64,24 +70,31 @@ function submit() {
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow p-6">
+  <div class="bg-white rounded shadow-sm border p-6" style="border-color: var(--border-color);">
     <h3 class="text-lg font-bold text-center text-[#8b0000] mb-4">手工指定六爻</h3>
 
+    <!-- 正背对应说明 -->
+    <div class="text-xs text-gray-500 mb-4 text-center space-y-0.5 bg-gray-50 rounded py-2 px-3" style="border-radius: var(--radius);">
+      <p>硬币选择：字为<strong>正面（阳）</strong>，花/满文为<strong>反面（阴）</strong></p>
+      <p>三正面=老阳(动)、二正一反=少阳、一正二反=少阴、三反面=老阴(动)</p>
+    </div>
+
     <!-- 已选结果预览 -->
-    <div class="flex gap-2 justify-center mb-6">
+    <div class="hexagram-center gap-2 mb-6">
       <div
         v-for="(sel, i) in selections"
         :key="i"
         class="w-10 h-10 rounded border-2 flex items-center justify-center text-sm font-bold relative"
         :class="[
           i < currentStep || (i === currentStep && confirmed)
-            ? (OPTIONS[sel].yang ? 'border-red-500 bg-red-50 text-red-700' : 'border-blue-500 bg-blue-50 text-blue-700')
+            ? 'border-gray-300 bg-gray-50'
             : 'border-gray-300 bg-gray-50 text-gray-300',
           i === currentStep && !confirmed ? 'ring-2 ring-[#8b0000]' : '',
         ]"
+        style="color: #333;"
       >
         {{ i < currentStep || (i === currentStep && confirmed) ? (OPTIONS[sel].yang ? '⚊' : '⚋') : '?' }}
-        <span v-if="i < currentStep && OPTIONS[sel].changing" class="absolute -top-1 -right-1 text-green-600 text-xs">●</span>
+        <span v-if="i < currentStep && OPTIONS[sel].changing" class="ml-1 text-[#c00] text-xs font-bold">→</span>
       </div>
     </div>
 
@@ -110,7 +123,8 @@ function submit() {
       <button
         v-if="currentStep > 0 && !allDone"
         @click="goPrev"
-        class="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100"
+        class="px-4 py-2 text-sm text-gray-600 border rounded hover:bg-gray-100"
+        style="border-color: var(--border-color); border-radius: var(--radius);"
       >
         上一步
       </button>
@@ -118,16 +132,27 @@ function submit() {
       <button
         v-if="allDone"
         @click="submit"
-        class="bg-[#8b0000] text-white px-8 py-3 rounded-lg text-lg font-bold hover:bg-red-900 transition-colors shadow"
+        class="bg-[#8b0000] text-white px-8 py-3 text-lg font-bold hover:bg-red-900 transition-colors shadow-sm"
+        :style="{ borderRadius: 'var(--radius)' }"
       >
         完成排盘
       </button>
 
       <button
         @click="resetAll"
-        class="px-4 py-2 text-sm text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-100"
+        class="px-4 py-2 text-sm text-gray-500 border rounded hover:bg-gray-100"
+        style="border-color: var(--border-color); border-radius: var(--radius);"
       >
         重置
+      </button>
+
+      <button
+        v-if="!allDone"
+        @click="randomFill"
+        class="px-4 py-2 text-sm text-yellow-700 border border-yellow-400 bg-yellow-50 rounded hover:bg-yellow-100"
+        :style="{ borderRadius: 'var(--radius)' }"
+      >
+        随机填充
       </button>
     </div>
   </div>

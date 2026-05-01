@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { PaipanResult, DisplayOptions } from '../types'
+import type { PaipanResult, PaipanNote, DisplayOptions } from '../types'
 
 const STORAGE_KEY = 'liuyao-history'
 const MAX_HISTORY = 100
@@ -24,10 +24,13 @@ export const usePaipanStore = defineStore('paipan', () => {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
-        // 转换日期字符串为Date对象
+        // 转换日期字符串为Date对象，并处理旧版string类型note
         history.value = parsed.map((item: any) => ({
           ...item,
           timestamp: new Date(item.timestamp),
+          note: item.note && typeof item.note === 'string'
+            ? { question: item.note, result: '', tags: [] }
+            : item.note,
         }))
       }
     } catch {
@@ -79,7 +82,7 @@ export const usePaipanStore = defineStore('paipan', () => {
   }
 
   /** 更新当前结果的备注 */
-  function updateNote(note: string) {
+  function updateNote(note: PaipanNote) {
     if (currentResult.value) {
       currentResult.value = { ...currentResult.value, note }
       saveToHistory(currentResult.value)
@@ -103,6 +106,7 @@ export const usePaipanStore = defineStore('paipan', () => {
     historyCount,
     setResult,
     saveToHistory,
+    saveHistory,
     updateNote,
     deleteHistory,
     clearHistory,

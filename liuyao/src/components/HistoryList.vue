@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import type { PaipanResult } from '../types'
+import type { PaipanResult, PaipanNote } from '../types'
 import { formatBaZi } from '../engine/bazi'
 
 defineProps<{
   items: PaipanResult[]
   showActions?: boolean
 }>()
+
+function getNoteDisplay(note: PaipanNote | string | undefined): string {
+  if (!note) return ''
+  if (typeof note === 'string') return note
+  // PaipanNote 对象：优先显示问题，其次是结果
+  return note.question || note.result || ''
+}
 
 const emit = defineEmits<{
   view: [id: string]
@@ -35,9 +42,9 @@ function formatTime(date: Date): string {
     >
       <div class="flex-1 cursor-pointer" @click="emit('view', item.id)">
         <div class="flex items-center gap-2">
-          <span class="font-bold text-[#8b0000]">{{ item.original.name }}</span>
+          <span class="font-bold text-[#8b0000]">{{ item.original.name }}({{ item.original.index }}) {{ item.original.gong }}宫</span>
           <span v-if="item.changed" class="text-sm text-gray-500">
-            → {{ item.changed.name }}
+            → {{ item.changed.name }}({{ item.changed.index }}) {{ item.changed.gong }}宫
           </span>
         </div>
         <div class="text-xs text-gray-500 mt-1">
@@ -45,7 +52,7 @@ function formatTime(date: Date): string {
           <span class="mx-1">|</span>
           <span class="font-mono">{{ formatBaZi(item.bazi) }}</span>
           <span v-if="item.note" class="mx-1">|</span>
-          <span v-if="item.note" class="italic">「{{ item.note }}」</span>
+          <span v-if="item.note" class="italic">「{{ getNoteDisplay(item.note) }}」</span>
         </div>
       </div>
       <div v-if="showActions" class="flex gap-2">

@@ -5,10 +5,10 @@ import { GUA_WU_XING } from '../data/bazi'
 import { getLiuQin } from './liuqin'
 
 /**
- * 计算伏神: 以宫卦（纯卦）的各爻六亲为伏神
- * 每爻的伏神 = 该爻位在宫卦中所对应的六亲
+ * 计算伏神
+ * 伏神规则：本卦中未出现的六亲类型，以宫卦（纯卦）对应爻位的六亲为伏神
  */
-export function calcFuShen(palace: BaGua, yaos: YaoDetail[]): FuShen[] {
+export function calcFuShen(palace: BaGua, yaos: YaoDetail[]): (FuShen | undefined)[] {
   const palaceHex = ALL_HEXAGRAMS.find(h => h.palace === palace && h.palacePos === 0)
   if (!palaceHex) return []
 
@@ -17,9 +17,16 @@ export function calcFuShen(palace: BaGua, yaos: YaoDetail[]): FuShen[] {
   const zhiOuter = GUA_NA_ZHI[palaceHex.upper].outer
   const allZhis = [...zhiInner, ...zhiOuter]
 
+  // 本卦中已有的六亲类型
+  const existingLiuqin = new Set(yaos.map(y => y.liuqin))
+
   return yaos.map((_y, i) => {
     const palaceWuxing = ZHI_WU_XING_NAJA[allZhis[i]]
     const palaceLiuqin = getLiuQin(gongWuxing, palaceWuxing)
-    return { liuqin: palaceLiuqin, zhi: allZhis[i], wuxing: palaceWuxing }
+    // 只在宫卦六亲类型不在本卦中时标记为伏神
+    if (!existingLiuqin.has(palaceLiuqin)) {
+      return { liuqin: palaceLiuqin, zhi: allZhis[i], wuxing: palaceWuxing }
+    }
+    return undefined
   })
 }

@@ -1,4 +1,5 @@
-import type { BaGua, TianGan, DiZhi } from '../types'
+import type { BaGua, TianGan, DiZhi, WuXing } from '../types'
+import { GAN_WU_XING, ZHI_WU_XING } from './bazi'
 
 /**
  * 纳甲规则: 八卦纳天干
@@ -32,21 +33,8 @@ export const GUA_NA_ZHI: Record<BaGua, { inner: [DiZhi, DiZhi, DiZhi]; outer: [D
   '坤': { inner: ['未', '巳', '卯'], outer: ['丑', '亥', '酉'] },
 }
 
-/** 地支对应的五行 */
-export const ZHI_WU_XING_NAJA: Record<DiZhi, '金' | '木' | '水' | '火' | '土'> = {
-  '子': '水', '丑': '土',
-  '寅': '木', '卯': '木',
-  '辰': '土', '巳': '火',
-  '午': '火', '未': '土',
-  '申': '金', '酉': '金',
-  '戌': '土', '亥': '水',
-}
+/** 地支对应的五行（引用 bazi.ts 中的数据，避免重复定义） */
+export const ZHI_WU_XING_NAJA = ZHI_WU_XING
 
-/** 天干对应的五行 */
-export const GAN_WU_XING_NAJA: Record<TianGan, '金' | '木' | '水' | '火' | '土'> = {
-  '甲': '木', '乙': '木',
-  '丙': '火', '丁': '火',
-  '戊': '土', '己': '土',
-  '庚': '金', '辛': '金',
-  '壬': '水', '癸': '水',
-}
+/** 天干对应的五行（引用 bazi.ts 中的数据，避免重复定义） */
+export const GAN_WU_XING_NAJA: Record<TianGan, WuXing> = GAN_WU_XING

@@ -41,7 +41,7 @@ export function exportAsJson(result: PaipanResult): void {
 }
 
 /** 格式化排盘文本 */
-function formatResultText(result: PaipanResult): string {
+export function formatResultText(result: PaipanResult): string {
   const lines: string[] = [
     '═══════════════════════════════════',
     '          六 爻 排 盘',
@@ -112,4 +112,42 @@ function formatDate(date: Date): string {
   const h = String(date.getHours()).padStart(2, '0')
   const min = String(date.getMinutes()).padStart(2, '0')
   return `${y}${m}${d}_${h}${min}`
+}
+
+/** 导出全部历史记录为 JSON 文件 */
+export function exportAllHistory(history: PaipanResult[]): void {
+  const blob = new Blob([JSON.stringify(history, null, 2)], {
+    type: 'application/json;charset=utf-8',
+  })
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  saveAs(blob, `六爻历史_备份_${dateStr}.json`)
+}
+
+/** 导入历史记录 JSON 文件，处理向后兼容 */
+export function importHistory(file: File): Promise<PaipanResult[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string
+        const parsed = JSON.parse(text)
+        if (!Array.isArray(parsed)) {
+          reject(new Error('文件格式不正确：应为 JSON 数组'))
+          return
+        }
+        const results = parsed.map((item: any) => ({
+          ...item,
+          timestamp: new Date(item.timestamp),
+          note: item.note && typeof item.note === 'string'
+            ? { question: item.note, result: '', tags: [] }
+            : item.note,
+        })) as PaipanResult[]
+        resolve(results)
+      } catch (err) {
+        reject(new Error('文件解析失败，请确认选择了正确的 JSON 文件'))
+      }
+    }
+    reader.onerror = () => reject(new Error('文件读取失败'))
+    reader.readAsText(file)
+  })
 }

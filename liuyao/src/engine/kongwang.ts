@@ -1,12 +1,12 @@
-import type { DiZhi, KongWang } from '../types'
+import type { DiZhi, TianGan, KongWang } from '../types'
 import { TIAN_GAN, DI_ZHI, XUN_KONG } from '../data/bazi'
 
 /**
  * 计算空亡：根据日柱确定所属旬，再找空亡地支
  */
-export function calcKongWang(dayGan: string, dayZhi: string): KongWang | null {
-  const ganIdx = TIAN_GAN.indexOf(dayGan as any)
-  const zhiIdx = DI_ZHI.indexOf(dayZhi as any)
+export function calcKongWang(dayGan: TianGan, dayZhi: DiZhi): KongWang | null {
+  const ganIdx = TIAN_GAN.indexOf(dayGan)
+  const zhiIdx = DI_ZHI.indexOf(dayZhi)
 
   // 旬的判断: 甲子旬从甲子日开始 10天一周期
   // xunStartZhi = 日支索引 - 日干索引 (mod 12)

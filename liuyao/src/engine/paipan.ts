@@ -9,7 +9,8 @@ import { getShenShaForYao } from './shensha'
 import { detectSanHe } from './sanhe'
 import { detectFanYinFuYin } from './fanyin'
 import { calcFuShen } from './fushen'
-import { findHexagramByCode } from '../data/hexagrams'
+import { detectAnDong } from './andong'
+import { findHexagramByCode, ALL_HEXAGRAMS } from '../data/hexagrams'
 import { GUA_NA_GAN, GUA_NA_ZHI, ZHI_WU_XING_NAJA } from '../data/naja'
 import { GUA_WU_XING } from '../data/bazi'
 import { getWangShuai } from '../data/deities'
@@ -90,19 +91,27 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
     originalYaos[i].fushen = fushenList[i]
   }
 
+  // 7b. 暗动
+  detectAnDong(originalYaos, bazi)
+
   // 8. 本卦动爻是否变化
   const hasChanging = yaos.some(y => y.changing)
 
   const original: GuaDetail = {
     name: originalInfo.name,
+    index: ALL_HEXAGRAMS.indexOf(originalInfo!) + 1,
     upper: originalInfo.upper,
     lower: originalInfo.lower,
     gong: originalInfo.palace,
     gongWuxing,
     guaci: originalInfo.guaci,
+    yaoci: originalInfo.yaoci,
     yaos: originalYaos,
     shiPosition: shi,
     yingPosition: ying,
+    tuancizhuan: originalInfo.tuancizhuan,
+    xiangzhuan: originalInfo.xiangzhuan,
+    yaoxiang: originalInfo.yaoxiang,
   }
 
   // 9. 变卦
@@ -148,16 +157,25 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
         changedYaosDetail[i].fushen = changedFuShen[i]
       }
 
+
+      // 暗动
+      detectAnDong(changedYaosDetail, bazi)
+
       changed = {
         name: changedInfo.name,
+        index: ALL_HEXAGRAMS.indexOf(changedInfo!) + 1,
         upper: changedInfo.upper,
         lower: changedInfo.lower,
         gong: changedInfo.palace,
         gongWuxing: changedGongWuxing,
         guaci: changedInfo.guaci,
+        yaoci: changedInfo.yaoci,
         yaos: changedYaosDetail,
         shiPosition: changedShi,
         yingPosition: changedYing,
+        tuancizhuan: changedInfo.tuancizhuan,
+        xiangzhuan: changedInfo.xiangzhuan,
+        yaoxiang: changedInfo.yaoxiang,
       }
     }
   }
@@ -168,8 +186,7 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
   // 11. 反吟伏吟
   let fanyin = null
   if (changed) {
-    const changedZhis = changed.yaos.map(y => y.najia.zhi)
-    fanyin = detectFanYinFuYin(allZhis, changedZhis, original.name, changed.name)
+    fanyin = detectFanYinFuYin(original.yaos, changed.yaos)
   }
 
   const result: PaipanResult = {

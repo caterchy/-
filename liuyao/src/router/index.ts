@@ -18,6 +18,11 @@ const router = createRouter({
       name: 'history',
       component: () => import('../views/HistoryView.vue'),
     },
+    {
+      path: '/library',
+      name: 'library',
+      component: () => import('../views/HexagramLibraryView.vue'),
+    },
   ],
 })
 

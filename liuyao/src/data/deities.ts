@@ -26,9 +26,12 @@ export const LIU_SHEN_ORDER: LiuShen[] = ['青龙', '朱雀', '勾陈', '腾蛇'
  * 神煞规则
  * 六爻中最常用的神煞，按日柱地支确定
  */
+/** 神煞规则键：可以是天干或地支 */
+type ShenShaRuleKey = TianGan | DiZhi
+
 export const SHEN_SHA_RULES: Record<ShenShaType, {
   name: string
-  rule: Partial<Record<DiZhi, DiZhi[]>>
+  rule: Partial<Record<ShenShaRuleKey, DiZhi[]>>
 }> = {
   '天乙贵人': {
     name: '天乙贵人',
@@ -43,7 +46,7 @@ export const SHEN_SHA_RULES: Record<ShenShaType, {
       '壬': ['卯', '巳'],
       '癸': ['卯', '巳'],
       '辛': ['寅', '午'],
-    } as any,
+    },
   },
   '驿马': {
     name: '驿马',
@@ -126,22 +129,22 @@ export const SHEN_SHA_RULES: Record<ShenShaType, {
       '辛': ['酉'],
       '壬': ['亥'],
       '癸': ['子'],
-    } as any,
+    },
   },
   '羊刃': {
     name: '羊刃',
     rule: {
       '甲': ['卯'],
+      '乙': ['寅'],
       '丙': ['午'],
-      '丁': ['未'],
+      '丁': ['巳'],
       '戊': ['午'],
-      '己': ['未'],
+      '己': ['巳'],
       '庚': ['酉'],
-      '辛': ['戌'],
+      '辛': ['申'],
       '壬': ['子'],
-      '癸': ['丑'],
-      '乙': ['辰'],
-    } as any,
+      '癸': ['亥'],
+    },
   },
   '文昌': {
     name: '文昌',
@@ -156,7 +159,7 @@ export const SHEN_SHA_RULES: Record<ShenShaType, {
       '辛': ['子'],
       '壬': ['寅'],
       '癸': ['卯'],
-    } as any,
+    },
   },
   '华盖': {
     name: '华盖',

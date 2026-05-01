@@ -1,7 +1,7 @@
 # 存储规定（私人助理令 001号）
 
 ## 总则
-所有项目数据和配置统一存储在 `E:\cc_test\` 目录树中，不得散落在其他位置。
+所有项目数据、配置、缓存文件、工作文件及临时文件，统一存储在 `E:\cc_test\` 目录树中，不得散落在其他位置（如桌面、文档文件夹、%TEMP% 等外部路径）。
 
 ## 目录结构规范
 
@@ -12,15 +12,16 @@ E:\cc_test\
 │   ├── settings.json            # 项目级设置（hooks + permissions）
 │   ├── settings.local.json      # 本地覆盖（不纳入版本管理）
 │   ├── agents\                  # Agent 提示词模板
-│   │   ├── personal_assistant.md
-│   │   ├── project_manager.md
-│   │   ├── developer.md
-│   │   └── debug.md
+│   │   ├── personal_assistant.md  # 私人助理（规则维护）
+│   │   ├── project_manager.md     # 项目经理（任务管理）
+│   │   ├── developer.md           # 开发工程师
+│   │   ├── debug.md               # Debug 专家
+│   │   └── test.md                # 测试工程师
 │   └── rules\                   # 底层规定文档（由私人助理维护）
-│       ├── storage_rules.md     # [本文件] 存储规范
-│       ├── agent_hierarchy.md   # Agent 层级和协作规则
-│       ├── feedback_mechanism.md# 反馈机制设计
-│       └── project_onboarding.md# 新项目接入规范
+│       ├── storage_rules.md      # [本文件] 存储规范 ✓
+│       ├── agent_hierarchy.md    # Agent 层级和协作规则 ✓
+│       ├── feedback_mechanism.md # 反馈机制设计 ✓
+│       └── project_onboarding.md # 新项目接入规范 ✓
 │
 ├── <project-name>\              # 每个项目独立子目录
 │   ├── src\
@@ -44,3 +45,4 @@ E:\cc_test\
 3. **不允许在项目外的目录写文件**（如桌面、文档文件夹等）
 4. **反馈文件统一放在 `task-feedback/<project-name>/` 下**
 5. **底层规定文档由私人助理维护，其他 Agent 只读引用**
+6. **缓存文件、编译产物、临时文件等所有工作产出必须位于 `E:\cc_test\` 目录树内**，禁止写入系统临时目录或项目外位置。如需外部工具生成缓存，应通过配置项将其输出重定向到 `E:\cc_test\` 下对应子目录。

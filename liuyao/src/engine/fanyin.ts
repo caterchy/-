@@ -1,53 +1,54 @@
-import type { DiZhi, FanYinFuYin } from '../types'
+import type { DiZhi, YaoDetail, FanYinFuYin } from '../types'
 import { DI_ZHI_LIU_CHONG } from '../data/bazi'
 
 /**
  * 检测反吟伏吟
+ *
+ * 伏吟: 动爻所属半卦（上三爻/下三爻）的地支未发生变化
+ * 反吟: 动爻所属半卦的地支全部变为互冲关系
  */
 export function detectFanYinFuYin(
-  originalZhis: DiZhi[],
-  changedZhis: DiZhi[],
-  originalName: string,
-  changedName: string,
+  originalYaos: YaoDetail[],
+  changedYaos: YaoDetail[],
 ): FanYinFuYin | null {
-  // 伏吟: 变卦与本卦相同
-  if (originalName === changedName) {
-    return { type: '伏吟', description: '变卦与本卦相同，为伏吟之象' }
+  const descriptions: string[] = []
+
+  // 下卦（初爻到三爻，索引 0-2）是否有动爻
+  const lowerMoving = originalYaos.slice(0, 3).some(y => y.yao.changing)
+  // 上卦（四爻到上爻，索引 3-5）是否有动爻
+  const upperMoving = originalYaos.slice(3, 6).some(y => y.yao.changing)
+
+  const originalLowerZhis = originalYaos.slice(0, 3).map(y => y.najia.zhi)
+  const changedLowerZhis = changedYaos.slice(0, 3).map(y => y.najia.zhi)
+  const originalUpperZhis = originalYaos.slice(3, 6).map(y => y.najia.zhi)
+  const changedUpperZhis = changedYaos.slice(3, 6).map(y => y.najia.zhi)
+
+  // 伏吟: 动爻所在半卦地支不变
+  if (lowerMoving && zhiArraysEqual(originalLowerZhis, changedLowerZhis)) {
+    descriptions.push('下卦伏吟')
+  }
+  if (upperMoving && zhiArraysEqual(originalUpperZhis, changedUpperZhis)) {
+    descriptions.push('上卦伏吟')
   }
 
-  // 反吟: 上下卦地支相冲
-  // 上卦(4-6爻)和下卦(1-3爻)各自对冲
-  const lowerOriginal = originalZhis.slice(0, 3)
-  const lowerChanged = changedZhis.slice(0, 3)
-  const upperOriginal = originalZhis.slice(3, 6)
-  const upperChanged = changedZhis.slice(3, 6)
-
-  const allChong = originalZhis.every((zhi, i) => {
-    return DI_ZHI_LIU_CHONG[zhi] === changedZhis[i]
-  })
-
-  const upperChong = upperOriginal.every((zhi, i) => {
-    return DI_ZHI_LIU_CHONG[zhi] === upperChanged[i]
-  })
-
-  const lowerChong = lowerOriginal.every((zhi, i) => {
-    return DI_ZHI_LIU_CHONG[zhi] === lowerChanged[i]
-  })
-
-  if (allChong) {
-    return { type: '反吟', description: '变卦与本卦全部相冲，为大反吟之象' }
+  // 反吟: 动爻所在半卦地支变为互冲
+  if (lowerMoving && zhiArraysChong(originalLowerZhis, changedLowerZhis)) {
+    descriptions.push('下卦反吟')
+  }
+  if (upperMoving && zhiArraysChong(originalUpperZhis, changedUpperZhis)) {
+    descriptions.push('上卦反吟')
   }
 
-  if (upperChong && lowerChong) {
-    return { type: '反吟', description: '变卦上下卦均与本卦对冲，为反吟之象' }
-  }
+  if (descriptions.length === 0) return null
 
-  if (upperChong || lowerChong) {
-    return {
-      type: '反吟',
-      description: `${upperChong ? '上卦' : '下卦'}与本卦${upperChong ? '上卦' : '下卦'}对冲，为反吟之象`,
-    }
-  }
+  const type = descriptions.some(d => d.includes('反吟')) ? '反吟' : '伏吟'
+  return { type, description: descriptions.join('；') }
+}
 
-  return null
+function zhiArraysEqual(a: DiZhi[], b: DiZhi[]): boolean {
+  return a.every((z, i) => z === b[i])
+}
+
+function zhiArraysChong(a: DiZhi[], b: DiZhi[]): boolean {
+  return a.every((z, i) => DI_ZHI_LIU_CHONG[z] === b[i])
 }

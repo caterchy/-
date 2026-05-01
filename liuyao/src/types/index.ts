@@ -80,6 +80,10 @@ export interface YaoDetail {
   fushen?: FuShen
   /** 月建旺衰 */
   wangshuai?: WangShuai
+  /** 是否暗动（含月破/日破） */
+  isAnDong?: boolean
+  /** 暗动原因 */
+  anDongReason?: '月冲' | '日冲' | '月破' | '日破'
 }
 
 /** 四柱中的一柱 */
@@ -101,6 +105,8 @@ export interface BaZi {
 export interface GuaDetail {
   /** 卦名 */
   name: string
+  /** 卦序编号 (1-64) */
+  index: number
   /** 上卦 */
   upper: BaGua
   /** 下卦 */
@@ -111,12 +117,20 @@ export interface GuaDetail {
   gongWuxing: WuXing
   /** 卦辞 */
   guaci: string
+  /** 爻辞，从初爻到上爻 */
+  yaoci: string[]
   /** 六个爻的完整信息，从初爻(0)到上爻(5) */
   yaos: YaoDetail[]
   /** 世爻位置 (1-6) */
   shiPosition: number
   /** 应爻位置 (1-6) */
   yingPosition: number
+  /** 彖传 */
+  tuancizhuan?: string
+  /** 大象传 */
+  xiangzhuan?: string
+  /** 小象传，每爻一条 */
+  yaoxiang?: string[]
 }
 
 /** 三合局 */
@@ -152,6 +166,26 @@ export interface ShenShaMark {
   type: ShenShaType
 }
 
+/** 起卦方式 */
+export type DivinationMethod =
+  | 'coin'
+  | 'manual'
+  | 'auto'
+  | 'time'
+  | 'number'
+  | 'character'
+  | 'hexagram'
+
+/** 备注对象 */
+export interface PaipanNote {
+  /** 占卜问题 */
+  question: string
+  /** 占卜结果记录 */
+  result: string
+  /** 快速标签 */
+  tags: string[]
+}
+
 /** 完整排盘结果 */
 export interface PaipanResult {
   /** 唯一标识 */
@@ -170,8 +204,10 @@ export interface PaipanResult {
   sanhe?: SanHe
   /** 反吟伏吟（可选） */
   fanyin?: FanYinFuYin
+  /** 起卦方式（可选，向后兼容旧数据） */
+  method?: DivinationMethod
   /** 备注 */
-  note?: string
+  note?: PaipanNote
 }
 
 /** 显示开关配置 */
