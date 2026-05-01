@@ -41,12 +41,12 @@ const POSITION_NAMES = ['初', '二', '三', '四', '五', '上']
       </thead>
       <tbody>
         <tr
-          v-for="(y, i) in gua.yaos"
+          v-for="(y, i) in [...gua.yaos].reverse()"
           :key="i"
           :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
         >
           <td class="px-2 py-2 border align-middle" style="border-color: var(--border-color);">
-            {{ POSITION_NAMES[i] }}
+            {{ POSITION_NAMES[gua.yaos.length - 1 - i] }}
             <span v-if="y.isShi" class="text-red-600 text-xs ml-1">●世</span>
             <span v-else-if="y.isYing" class="text-blue-600 text-xs ml-1">○应</span>
           </td>

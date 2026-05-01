@@ -18,20 +18,27 @@ const coins = ref<CoinFace[]>([null, null, null])
 const showResult = ref(false)
 const lastResultText = ref('')
 
+// Independent flip animation tracking per coin
+const coinFlipping = ref<boolean[]>([false, false, false])
+
+const POSITION_NAMES = ['初', '二', '三', '四', '五', '上']
+
 const isComplete = computed(() => currentToss.value >= MAX_TOSSES)
 const progressText = computed(() =>
   isComplete.value ? '已完成' : `第 ${currentToss.value + 1} / ${MAX_TOSSES} 次`
 )
 
+/** Each coin flips independently with staggered delay */
 function doToss() {
   if (isComplete.value || isAnimating.value) return
 
   isAnimating.value = true
   showResult.value = false
   coins.value = [null, null, null]
+  coinFlipping.value = [false, false, false]
   lastResultText.value = ''
 
-  // Generate random results for 3 coins
+  // Generate random results for 3 coins independently
   const results: CoinFace[] = Array.from({ length: 3 }, () =>
     Math.random() < 0.5 ? 'heads' : 'tails'
   )
@@ -53,26 +60,36 @@ function doToss() {
     lastResultText.value = '三反面（老阴）⚋× 动爻'
   }
 
+  // Staggered flip: each coin starts its animation at a different time
+  results.forEach((_, idx) => {
+    setTimeout(() => {
+      coinFlipping.value[idx] = true
+    }, idx * 100)
+  })
+
   // End animation and show results
+  const animDuration = 400 + 2 * 100 // last coin start + flip duration
   setTimeout(() => {
     coins.value = results
     yaos.value.push(yao)
     currentToss.value++
     showResult.value = true
     isAnimating.value = false
+    coinFlipping.value = [false, false, false]
 
     if (currentToss.value >= MAX_TOSSES) {
       setTimeout(() => {
         emit('complete', yaos.value)
       }, 600)
     }
-  }, 700)
+  }, animDuration)
 }
 
 function reset() {
   yaos.value = []
   currentToss.value = 0
   coins.value = [null, null, null]
+  coinFlipping.value = [false, false, false]
   showResult.value = false
   lastResultText.value = ''
 }
@@ -91,15 +108,15 @@ function reset() {
       </div>
     </div>
 
-    <!-- Three coins -->
+    <!-- Three coins with independent 3D flip -->
     <div class="flex justify-center items-center gap-5 sm:gap-8 my-8">
       <div
         v-for="i in 3"
         :key="i"
         class="coin-container"
         :class="{
-          'coin-spinning': isAnimating,
-          'coin-flipped': !isAnimating && coins[i - 1] !== null,
+          'coin-spinning': isAnimating && !coinFlipping[i - 1] && coins[i - 1] === null,
+          'coin-flipped': coinFlipping[i - 1] || coins[i - 1] !== null,
         }"
       >
         <div class="coin-inner">
@@ -142,16 +159,16 @@ function reset() {
       {{ lastResultText }}
     </div>
 
-    <!-- Accumulated yaos: 纵向从上到下（初爻到上爻） -->
+    <!-- Accumulated yaos: 纵向从下到上（初爻在下，上爻在上） -->
     <div v-if="yaos.length > 0" class="mt-4">
       <div class="text-xs text-gray-400 mb-2">已生成:</div>
       <div class="hexagram-center flex-col gap-1">
         <div
-          v-for="(y, i) in yaos"
+          v-for="(y, i) in [...yaos].reverse()"
           :key="i"
           class="flex items-center gap-2"
         >
-          <span class="text-xs text-gray-400 w-4 text-right">{{ ['初', '二', '三', '四', '五', '上'][i] }}</span>
+          <span class="text-xs text-gray-400 w-4 text-right">{{ POSITION_NAMES[yaos.length - 1 - i] }}</span>
           <div class="w-8 h-8 sm:w-10 sm:h-10 rounded border-2 flex items-center justify-center text-base sm:text-lg font-bold border-gray-300 bg-gray-50"
             style="color: #333;"
           >
@@ -175,7 +192,7 @@ function reset() {
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.3s ease;
+  transition: transform 0.6s ease;
   transform-style: preserve-3d;
 }
 
@@ -202,7 +219,7 @@ function reset() {
   display: block;
 }
 
-/* Spinning animation during toss */
+/* Spinning animation during toss before individual flip */
 .coin-spinning .coin-inner {
   animation: coin-tumble 0.15s ease-in-out infinite;
 }

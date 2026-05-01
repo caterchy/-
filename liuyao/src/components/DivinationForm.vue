@@ -1,47 +1,34 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Yao, DivinationMethod } from '../types'
+import CommonDivinationHeader from './CommonDivinationHeader.vue'
 import CoinToss from './CoinToss.vue'
 import ManualInput from './ManualInput.vue'
-import { divineByTime, divineByTwoNumbers, divineBySingleNumber, divineByCharacters, divineByHexagram } from '../engine/divination'
+import NumberDivination from './NumberDivination.vue'
+import CharacterDivination from './CharacterDivination.vue'
+import { divineByTime, divineByHexagram } from '../engine/divination'
 import { ALL_HEXAGRAMS } from '../data/hexagrams'
 
 const emit = defineEmits<{
   complete: [yaos: Yao[], method: DivinationMethod]
 }>()
 
-// --- Question type ---
-const QUESTION_TYPES = [
-  { value: 'love-m', label: '感情-男' },
-  { value: 'love-f', label: '感情-女' },
-  { value: 'career', label: '事业' },
-  { value: 'wealth', label: '财运' },
-  { value: 'health', label: '健康' },
-  { value: 'travel', label: '出行' },
-  { value: 'exam', label: '考试' },
-  { value: 'other', label: '其他' },
-] as const
-
-const questionType = ref<string>('')
+// --- Common header state ---
+const questionType = ref('')
 const questionText = ref('')
+const gender = ref('')
+const dateTimeStr = ref(formatDateTimeLocal(new Date()))
 
-function onQuestionTypeChange(val: string) {
-  questionType.value = val
-  const map: Record<string, string> = {
-    'love-m': '感情运势（男）',
-    'love-f': '感情运势（女）',
-    'career': '事业发展',
-    'wealth': '财运走势',
-    'health': '健康状况',
-    'travel': '出行事宜',
-    'exam': '考试结果',
-    'other': '',
-  }
-  if (map[val] && !questionText.value) {
-    questionText.value = map[val]
-  }
+function formatDateTimeLocal(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  return `${y}-${m}-${d}T${h}:${min}`
 }
 
+// --- Tabs ---
 const tabs: { key: DivinationMethod; label: string }[] = [
   { key: 'coin', label: '摇钱' },
   { key: 'manual', label: '手工' },
@@ -54,28 +41,6 @@ const tabs: { key: DivinationMethod; label: string }[] = [
 
 const activeTab = ref<DivinationMethod>('coin')
 const isLoading = ref(false)
-
-// --- Time form ---
-const now = new Date()
-const timeDateTimeStr = ref(formatDateTimeLocal(now))
-
-function formatDateTimeLocal(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  const h = String(date.getHours()).padStart(2, '0')
-  const min = String(date.getMinutes()).padStart(2, '0')
-  return `${y}-${m}-${d}T${h}:${min}`
-}
-
-// --- Number form ---
-const numberMode = ref<'single' | 'dual'>('single')
-const singleNumber = ref('')
-const dualNumberA = ref('')
-const dualNumberB = ref('')
-
-// --- Character form ---
-const characterText = ref('')
 
 // --- Hexagram form ---
 const hexSearch = ref('')
@@ -102,7 +67,6 @@ const selectedChangedHexName = computed(() => {
   return ALL_HEXAGRAMS.find(h => h.code === selectedChangedHexagram.value)?.name ?? ''
 })
 
-// When both original and changed hexagrams are selected, auto-determine moving positions
 function syncMovingFromHexagrams() {
   if (!selectedHexagram.value || !selectedChangedHexagram.value) return
   const origCode = selectedHexagram.value
@@ -133,43 +97,28 @@ function onManualComplete(yaos: Yao[]) {
   emit('complete', yaos, 'manual')
 }
 
+function onNumberComplete(yaos: Yao[]) {
+  emit('complete', yaos, 'number')
+}
+
+function onCharacterComplete(yaos: Yao[]) {
+  emit('complete', yaos, 'character')
+}
+
 function startAuto() {
   isLoading.value = true
-  // Brief visual delay for feedback
   setTimeout(() => {
     isLoading.value = false
-    // Auto generates via generatePaipanResult, but we need to go through
-    // the same flow - we'll call the engine directly in HomeView
-    // For DivinationForm, we use autoCast() from coin.ts
     emit('complete', [], 'auto')
   }, 800)
 }
 
 function startTime() {
-  if (!timeDateTimeStr.value) return
-  const date = new Date(timeDateTimeStr.value)
+  if (!dateTimeStr.value) return
+  const date = new Date(dateTimeStr.value)
   if (isNaN(date.getTime())) return
   const yaos = divineByTime(date)
   emit('complete', yaos, 'time')
-}
-
-function startNumber() {
-  let yaos: Yao[]
-  if (numberMode.value === 'dual') {
-    const a = parseInt(dualNumberA.value) || 0
-    const b = parseInt(dualNumberB.value) || 0
-    yaos = divineByTwoNumbers(a, b)
-  } else {
-    yaos = divineBySingleNumber(parseInt(singleNumber.value) || 0)
-  }
-  emit('complete', yaos, 'number')
-}
-
-function startCharacter() {
-  const text = characterText.value.trim()
-  if (!text) return
-  const yaos = divineByCharacters(text)
-  emit('complete', yaos, 'character')
 }
 
 function startHexagram() {
@@ -181,40 +130,22 @@ function startHexagram() {
 
 // --- Validation ---
 const canSubmitHexagram = computed(() => !!selectedHexagram.value)
-const canSubmitCharacter = computed(() => characterText.value.trim().length >= 2)
-
-// --- Hour labels ---
 </script>
 
 <template>
   <div class="bg-white rounded shadow-sm border overflow-hidden" style="border-color: var(--border-color);">
-    <!-- 问题类型 -->
-    <div class="px-4 pt-4 pb-2 space-y-2">
-      <div class="text-xs text-gray-500 mb-1">问题类型</div>
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="qt in QUESTION_TYPES"
-          :key="qt.value"
-          @click="onQuestionTypeChange(qt.value)"
-          class="px-3 py-1.5 text-xs font-medium border rounded transition-all"
-          :class="questionType === qt.value
-            ? 'bg-[#8b0000] text-white border-[#8b0000]'
-            : 'bg-white text-gray-600 border-gray-200 hover:border-[#8b7355]'"
-        >
-          {{ qt.label }}
-        </button>
-      </div>
-      <input
-        v-model="questionText"
-        placeholder="具体问题（可选）..."
-        class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-        style="border-color: var(--border-color);"
-        maxlength="100"
+    <!-- Common Header -->
+    <div class="px-4 pt-4 pb-2 border-b border-gray-100">
+      <CommonDivinationHeader
+        v-model:question-type="questionType"
+        v-model:question-text="questionText"
+        v-model:gender="gender"
+        v-model:date-time="dateTimeStr"
       />
     </div>
 
     <!-- Method Tabs -->
-    <div class="flex overflow-x-auto scrollbar-none border-b border-gray-100 bg-gray-50/50">
+    <div class="flex overflow-x-auto scrollbar-none bg-gray-50/50">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -269,7 +200,7 @@ const canSubmitCharacter = computed(() => characterText.value.trim().length >= 2
         <div>
           <label class="text-xs text-gray-500 mb-1 block">日期时间</label>
           <input
-            v-model="timeDateTimeStr"
+            v-model="dateTimeStr"
             type="datetime-local"
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
                    focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
@@ -285,85 +216,13 @@ const canSubmitCharacter = computed(() => characterText.value.trim().length >= 2
       </div>
 
       <!-- 数字起卦 -->
-      <div v-else-if="activeTab === 'number'" class="space-y-4">
-        <div class="flex gap-2">
-          <button
-            @click="numberMode = 'single'"
-            class="flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all"
-            :class="numberMode === 'single'
-              ? 'border-[#8b0000] text-[#8b0000] bg-red-50'
-              : 'border-gray-200 text-gray-500 hover:border-gray-300'"
-          >单数起卦</button>
-          <button
-            @click="numberMode = 'dual'"
-            class="flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all"
-            :class="numberMode === 'dual'
-              ? 'border-[#8b0000] text-[#8b0000] bg-red-50'
-              : 'border-gray-200 text-gray-500 hover:border-gray-300'"
-          >双数起卦</button>
-        </div>
-
-        <div v-if="numberMode === 'single'">
-          <label class="text-xs text-gray-500 mb-1 block">输入数字</label>
-          <input
-            v-model="singleNumber"
-            type="number"
-            placeholder="如 2652"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-          />
-        </div>
-        <div v-else class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-xs text-gray-500 mb-1 block">第一个数字</label>
-            <input
-              v-model="dualNumberA"
-              type="number"
-              placeholder="如 3"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-            />
-          </div>
-          <div>
-            <label class="text-xs text-gray-500 mb-1 block">第二个数字</label>
-            <input
-              v-model="dualNumberB"
-              type="number"
-              placeholder="如 8"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-            />
-          </div>
-        </div>
-        <button
-          @click="startNumber"
-          class="w-full bg-[#8b0000] text-white py-3 rounded-xl text-sm font-bold
-                 hover:bg-red-900 active:scale-[0.98] transition-all duration-200 shadow-sm"
-        >
-          开始起卦
-        </button>
+      <div v-else-if="activeTab === 'number'">
+        <NumberDivination @complete="onNumberComplete" />
       </div>
 
       <!-- 汉字起卦 -->
-      <div v-else-if="activeTab === 'character'" class="space-y-4">
-        <p class="text-sm text-gray-500">输入 2 个以上汉字</p>
-        <p class="text-xs text-gray-400">注：笔画数为 Unicode 估算值，非实际笔画数</p>
-        <input
-          v-model="characterText"
-          placeholder="请输入汉字..."
-          class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                 focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-          maxlength="20"
-        />
-        <button
-          @click="startCharacter"
-          :disabled="!canSubmitCharacter"
-          class="w-full bg-[#8b0000] text-white py-3 rounded-xl text-sm font-bold
-                 hover:bg-red-900 disabled:opacity-40 disabled:cursor-not-allowed
-                 active:scale-[0.98] transition-all duration-200 shadow-sm"
-        >
-          开始起卦
-        </button>
+      <div v-else-if="activeTab === 'character'">
+        <CharacterDivination @complete="onCharacterComplete" />
       </div>
 
       <!-- 卦名起卦 -->
@@ -420,7 +279,7 @@ const canSubmitCharacter = computed(() => characterText.value.trim().length >= 2
 
         <div v-if="selectedHexagram">
           <label class="text-xs text-gray-500 mb-1 block">动爻（可多选）</label>
-          <div class="flex gap-2">
+          <div class="flex gap-2 flex-wrap">
             <label
               v-for="i in 6"
               :key="i"
@@ -437,14 +296,14 @@ const canSubmitCharacter = computed(() => characterText.value.trim().length >= 2
               />
               {{ ['初','二','三','四','五','上'][i - 1] }}
             </label>
+            <button
+              @click="dongYaos = []"
+              class="px-3 py-2 rounded-lg border text-sm transition-all text-gray-400 hover:border-gray-300"
+              :class="dongYaos.length === 0 ? 'bg-gray-100 border-gray-300 text-gray-600 font-bold' : ''"
+            >
+              静卦
+            </button>
           </div>
-          <button
-            @click="dongYaos = []"
-            class="mt-2 px-3 py-1 rounded text-xs border transition-all text-gray-400 hover:border-gray-300"
-            :class="dongYaos.length === 0 ? 'bg-gray-100 border-gray-300 text-gray-600 font-bold' : ''"
-          >
-            静卦
-          </button>
         </div>
 
         <button

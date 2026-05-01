@@ -15,6 +15,7 @@ const displayOptions = store.displayOptions
 const POSITION_NAMES = ['初', '二', '三', '四', '五', '上']
 
 const expandedYaoPosition = ref<number | null>(null)
+const guaciExpanded = ref(false)
 
 function toggleExpand(position: number) {
   if (expandedYaoPosition.value === position) {
@@ -139,13 +140,13 @@ function getNajaDetail(yao: YaoDetail, gua: GuaDetail): string[] {
 
 <template>
   <div class="card" style="background: #faf5eb; border-color: #8b7355;">
-    <!-- 神煞行 -->
+    <!-- 神煞行（可开关） -->
     <div v-if="showShenshaRow && allShensha.length > 0" class="bg-[#f0e8d8] border-b px-3 py-1.5 text-xs" style="border-color: #d4c5a9;">
       <span class="text-gray-500">神煞:</span>
       <span v-for="sh in allShensha" :key="sh" class="ml-2 text-purple-700">{{ sh }}</span>
     </div>
 
-    <!-- 排盘表头 -->
+    <!-- 排盘表头（6列） -->
     <div class="grid grid-cols-[auto_1fr_auto_auto_1fr_auto] text-xs text-gray-500 px-3 pt-2 pb-1 border-b bg-[#f0e8d8]" style="border-color: #d4c5a9;">
       <span class="text-center">六神</span>
       <span class="text-center">本卦 ({{ original.name }})</span>
@@ -160,18 +161,19 @@ function getNajaDetail(yao: YaoDetail, gua: GuaDetail): string[] {
       <div
         v-for="(row, idx) in rows"
         :key="idx"
-        class="flex flex-col border-b border-dashed last:border-b-0"
+        class="border-b border-dashed last:border-b-0"
+        :class="idx % 2 === 0 ? 'bg-white/60' : 'bg-[#f5efe5]/60'"
         style="border-color: #e0d5c0;"
       >
         <!-- 主行：六神 + 本卦 + 动爻 + 世应 + 变卦 -->
         <div class="grid grid-cols-[auto_1fr_auto_auto_1fr_auto] items-center gap-1 py-1.5">
-          <!-- 本卦六神 (无颜色) -->
+          <!-- 本卦六神 -->
           <span class="text-xs font-bold w-12 text-center" style="color: #333;">
             {{ row.orig.liushou }}
           </span>
 
           <!-- 本卦爻线 + 六亲 + 干支 -->
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5 justify-center">
             <span class="font-mono text-sm" style="color: #333;">
               {{ row.orig.yao.yao.yang ? '━━━━━' : '━ ━━' }}
             </span>
@@ -206,7 +208,7 @@ function getNajaDetail(yao: YaoDetail, gua: GuaDetail): string[] {
 
           <!-- 动爻 -->
           <span class="text-center w-6">
-            <span v-if="row.orig.yao.yao.changing" class="text-[#c00] font-bold">→</span>
+            <span v-if="row.orig.yao.yao.changing" class="text-[#c00] font-bold text-lg">→</span>
           </span>
 
           <!-- 世应 -->
@@ -217,7 +219,7 @@ function getNajaDetail(yao: YaoDetail, gua: GuaDetail): string[] {
 
           <!-- 变卦行 -->
           <template v-if="changed && row.changedData">
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 justify-center">
               <span class="font-mono text-sm" style="color: #333;">
                 {{ row.changedData.yao.yao.yang ? '━━━━━' : '━ ━━' }}
               </span>
@@ -246,13 +248,13 @@ function getNajaDetail(yao: YaoDetail, gua: GuaDetail): string[] {
                 <span class="text-gray-400">({{ row.changedData.yao.wuxing }})</span>
               </span>
             </div>
-            <!-- 变卦六神 (无颜色) -->
+            <!-- 变卦六神（右对齐） -->
             <span class="text-xs font-bold w-12 text-right" style="color: #333;">
               {{ row.changedData.liushou }}
             </span>
           </template>
           <template v-else-if="!changed">
-            <span class="text-xs text-gray-400 text-center w-10">—</span>
+            <span class="text-xs text-gray-400 text-center">—</span>
           </template>
         </div>
 
@@ -275,14 +277,22 @@ function getNajaDetail(yao: YaoDetail, gua: GuaDetail): string[] {
       </div>
     </div>
 
-    <!-- 底部信息：卦宫 + 伏神 -->
+    <!-- 底部信息：卦宫 + 变宫 + 卦辞 -->
     <div class="bg-[#f0e8d8] border-t px-3 py-1.5 text-xs flex flex-wrap gap-x-4 gap-y-1" style="border-color: #d4c5a9;">
       <span>卦宫: {{ original.gong }}（{{ original.gongWuxing }}）</span>
       <span v-if="changed">变宫: {{ changed.gong }}（{{ changed.gongWuxing }}）</span>
-      <span v-if="original.guaci && displayOptions.showGuaci" class="text-gray-500 italic">卦辞: {{ original.guaci }}</span>
+      <button
+        v-if="original.guaci && displayOptions.showGuaci"
+        @click="guaciExpanded = !guaciExpanded"
+        class="text-gray-500 italic hover:text-gray-700 transition-colors"
+      >
+        <span v-if="guaciExpanded">卦辞: {{ original.guaci }}</span>
+        <span v-else>卦辞: {{ original.guaci.length > 20 ? original.guaci.slice(0, 20) + '...' : original.guaci }}</span>
+        <span class="text-gray-400 text-xs ml-1">{{ guaciExpanded ? '▲' : '▼' }}</span>
+      </button>
     </div>
 
-    <!-- 伏神信息 -->
+    <!-- 伏神信息（独立bg-amber-50区域） -->
     <div v-if="displayOptions.showFuShen" class="border-t px-3 py-1.5 text-xs bg-amber-50" style="border-color: #d4c5a9;">
       <span class="text-gray-500">伏神:</span>
       <span v-for="(y, i) in original.yaos" :key="i">

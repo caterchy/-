@@ -88,16 +88,16 @@ const changingDetails = computed(() => {
         </div>
         <div class="p-2.5 space-y-1.5">
           <div
-            v-for="(yao, i) in original.yaos"
+            v-for="(yao, i) in [...original.yaos].reverse()"
             :key="`orig-${i}`"
             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all duration-200"
             :class="[
-              isChangingPosition(i)
+              isChangingPosition(original.yaos.length - 1 - i)
                 ? 'bg-gradient-to-r from-yellow-100 via-amber-50 to-orange-50 border-2 border-red-400 shadow-md'
                 : 'bg-gray-50 border border-gray-200',
             ]"
           >
-            <span class="text-xs text-gray-500 font-medium w-7">{{ POSITION_NAMES[i] }}爻</span>
+            <span class="text-xs text-gray-500 font-medium w-7">{{ POSITION_NAMES[original.yaos.length - 1 - i] }}爻</span>
             <span
               class="font-bold"
               :class="[
@@ -137,16 +137,16 @@ const changingDetails = computed(() => {
         </div>
         <div class="p-2.5 space-y-1.5">
           <div
-            v-for="(yao, i) in changed.yaos"
+            v-for="(yao, i) in [...changed.yaos].reverse()"
             :key="`changed-${i}`"
             class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all duration-200"
             :class="[
-              isChangingPosition(i)
+              isChangingPosition(changed.yaos.length - 1 - i)
                 ? 'bg-green-50 border border-green-300'
                 : 'bg-gray-50 border border-gray-200',
             ]"
           >
-            <span class="text-xs text-gray-500 font-medium w-7">{{ POSITION_NAMES[i] }}爻</span>
+            <span class="text-xs text-gray-500 font-medium w-7">{{ POSITION_NAMES[changed.yaos.length - 1 - i] }}爻</span>
             <span
               class="text-sm font-medium"
               :class="yao.yao.yang ? 'text-red-600' : 'text-blue-600'"

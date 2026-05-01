@@ -1,5 +1,5 @@
-import type { TianGan, DiZhi, LiuShen, ShenShaType, WangShuai, WuXing } from '../types'
-import { ZHI_WU_XING } from './bazi'
+import type { TianGan, DiZhi, LiuShen, ShenShaType, WangShuai, WuXing, BaGua } from '../types'
+import { ZHI_WU_XING, DI_ZHI } from './bazi'
 
 /**
  * 六神安放规则: 按日柱天干定
@@ -178,6 +178,69 @@ export const SHEN_SHA_RULES: Record<ShenShaType, {
       '丑': ['丑'],
     },
   },
+  '将星': {
+    name: '将星',
+    rule: {
+      '申': ['子'], '子': ['子'], '辰': ['子'],
+      '亥': ['卯'], '卯': ['卯'], '未': ['卯'],
+      '寅': ['午'], '午': ['午'], '戌': ['午'],
+      '巳': ['酉'], '酉': ['酉'], '丑': ['酉'],
+    },
+  },
+  '谋星': {
+    name: '谋星',
+    rule: {
+      '申': ['辰'], '子': ['辰'], '辰': ['辰'],
+      '亥': ['未'], '卯': ['未'], '未': ['未'],
+      '寅': ['戌'], '午': ['戌'], '戌': ['戌'],
+      '巳': ['丑'], '酉': ['丑'], '丑': ['丑'],
+    },
+  },
+  '灾煞': {
+    name: '灾煞',
+    rule: {
+      '申': ['午'], '子': ['午'], '辰': ['午'],
+      '亥': ['酉'], '卯': ['酉'], '未': ['酉'],
+      '寅': ['子'], '午': ['子'], '戌': ['子'],
+      '巳': ['卯'], '酉': ['卯'], '丑': ['卯'],
+    },
+  },
+  '天马': {
+    name: '天马',
+    rule: {
+      '申': ['寅'], '子': ['寅'], '辰': ['寅'],
+      '亥': ['巳'], '卯': ['巳'], '未': ['巳'],
+      '寅': ['申'], '午': ['申'], '戌': ['申'],
+      '巳': ['亥'], '酉': ['亥'], '丑': ['亥'],
+    },
+  },
+  '香闺': {
+    name: '香闺',
+    rule: {
+      '申': ['巳'], '子': ['巳'], '辰': ['巳'],
+      '亥': ['申'], '卯': ['申'], '未': ['申'],
+      '寅': ['亥'], '午': ['亥'], '戌': ['亥'],
+      '巳': ['寅'], '酉': ['寅'], '丑': ['寅'],
+    },
+  },
+  '床帐': {
+    name: '床帐',
+    rule: {
+      '申': ['寅'], '子': ['寅'], '辰': ['寅'],
+      '亥': ['巳'], '卯': ['巳'], '未': ['巳'],
+      '寅': ['申'], '午': ['申'], '戌': ['申'],
+      '巳': ['亥'], '酉': ['亥'], '丑': ['亥'],
+    },
+  },
+  // 以下类型使用独立计算函数，不在SHEN_SHA_RULES中匹配
+  '天喜': { name: '天喜', rule: {} },
+  '皇恩': { name: '皇恩', rule: {} },
+  '天德': { name: '天德', rule: {} },
+  '月德': { name: '月德', rule: {} },
+  '天医': { name: '天医', rule: {} },
+  '世身': { name: '世身', rule: {} },
+  '卦身': { name: '卦身', rule: {} },
+  '胎爻': { name: '胎爻', rule: {} },
 }
 
 /**
@@ -225,4 +288,117 @@ export function getGuiRenZhi(gan: TianGan): DiZhi[] {
 export function getShenShaZhi(type: ShenShaType, riZhi: DiZhi): DiZhi[] {
   const rule = SHEN_SHA_RULES[type].rule[riZhi]
   return rule || []
+}
+
+// ===== New Shensha Calculation Functions =====
+
+/**
+ * 天喜：按月支季节计算
+ * 寅卯辰(春)→戌, 巳午未(夏)→丑, 申酉戌(秋)→辰, 亥子丑(冬)→未
+ */
+export function getTianXi(yueZhi: DiZhi): DiZhi {
+  if (['寅','卯','辰'].includes(yueZhi)) return '戌'
+  if (['巳','午','未'].includes(yueZhi)) return '丑'
+  if (['申','酉','戌'].includes(yueZhi)) return '辰'
+  return '未'
+}
+
+/**
+ * 皇恩：按日干计算
+ * 甲→酉, 乙→戌, 丙→亥, 丁→丑, 戊→子, 己→丑, 庚→寅, 辛→卯, 壬→辰, 癸→巳
+ */
+export function getHuangEn(riGan: TianGan): DiZhi {
+  const map: Record<TianGan, DiZhi> = {
+    '甲': '酉', '乙': '戌', '丙': '亥', '丁': '丑', '戊': '子',
+    '己': '丑', '庚': '寅', '辛': '卯', '壬': '辰', '癸': '巳',
+  }
+  return map[riGan]
+}
+
+/**
+ * 天德：按月支计算（渊海子平）
+ * 寅→丁, 卯→申, 辰→壬, 巳→辛, 午→亥, 未→甲, 申→癸, 酉→寅, 戌→丙, 亥→乙, 子→巳, 丑→庚
+ * 返回干支字符串
+ */
+export function getTianDe(yueZhi: DiZhi): string {
+  const map: Record<DiZhi, { gan: TianGan; zhi: DiZhi }> = {
+    '寅': { gan: '丁', zhi: '巳' },
+    '卯': { gan: '甲', zhi: '申' },
+    '辰': { gan: '壬', zhi: '亥' },
+    '巳': { gan: '辛', zhi: '酉' },
+    '午': { gan: '壬', zhi: '亥' },
+    '未': { gan: '甲', zhi: '寅' },
+    '申': { gan: '癸', zhi: '子' },
+    '酉': { gan: '庚', zhi: '寅' },
+    '戌': { gan: '丙', zhi: '午' },
+    '亥': { gan: '乙', zhi: '卯' },
+    '子': { gan: '丁', zhi: '巳' },
+    '丑': { gan: '庚', zhi: '申' },
+  }
+  const result = map[yueZhi]
+  return result ? `${result.gan}${result.zhi}` : ''
+}
+
+/**
+ * 月德：按月支计算
+ * 寅午戌→丙, 亥卯未→甲, 申子辰→壬, 巳酉丑→庚
+ */
+export function getYueDe(yueZhi: DiZhi): TianGan {
+  if (['寅','午','戌'].includes(yueZhi)) return '丙'
+  if (['亥','卯','未'].includes(yueZhi)) return '甲'
+  if (['申','子','辰'].includes(yueZhi)) return '壬'
+  return '庚'
+}
+
+/**
+ * 天医：按月支+2计算
+ * 寅→辰, 卯→巳, 辰→午, 巳→未, 午→申, 未→酉, 申→戌, 酉→亥, 戌→子, 亥→丑, 子→寅, 丑→卯
+ */
+export function getTianYi(yueZhi: DiZhi): DiZhi {
+  const idx = DI_ZHI.indexOf(yueZhi)
+  return DI_ZHI[(idx + 2) % 12]
+}
+
+/**
+ * 世身：按世爻位置计算
+ * 一世→子, 二世→巳, 三世→辰, 四世→未, 五世→卯, 六世(纯卦)→午, 游魂→申, 归魂→亥
+ */
+export function getShiShen(palacePos: number): DiZhi {
+  const map: Record<number, DiZhi> = {
+    0: '午',  // 纯卦 (六世)
+    1: '子',  // 一世
+    2: '巳',  // 二世
+    3: '辰',  // 三世
+    4: '未',  // 四世
+    5: '卯',  // 五世
+    6: '申',  // 游魂
+    7: '亥',  // 归魂
+  }
+  return map[palacePos] || '子'
+}
+
+/**
+ * 卦身：按卦宫计算
+ * 乾→子, 兑→未, 离→卯, 震→午, 巽→亥, 坎→酉, 艮→寅, 坤→巳
+ */
+export function getGuaShen(palace: BaGua): DiZhi {
+  const map: Record<BaGua, DiZhi> = {
+    '乾': '子', '兑': '未', '离': '卯', '震': '午',
+    '巽': '亥', '坎': '酉', '艮': '寅', '坤': '巳',
+  }
+  return map[palace]
+}
+
+/**
+ * 胎爻：按月支五行在十二长生的胎位
+ * 寅卯(木)→酉, 巳午(火)→子, 申酉(金)→卯, 亥子(水)→午, 辰戌丑未(土)→午
+ * 返回'无'表示该爻无胎位
+ */
+export function getTaiYao(yueZhi: DiZhi): DiZhi | '无' {
+  if (['寅','卯'].includes(yueZhi)) return '酉'
+  if (['巳','午'].includes(yueZhi)) return '子'
+  if (['申','酉'].includes(yueZhi)) return '卯'
+  if (['亥','子'].includes(yueZhi)) return '午'
+  if (['辰','戌','丑','未'].includes(yueZhi)) return '午'
+  return '无'
 }

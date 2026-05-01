@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { BaZi, KongWang } from '../types'
+import { ref, computed, onMounted } from 'vue'
+import type { BaZi, KongWang, BaGua, ShenShaType } from '../types'
 import { formatBaZi } from '../engine/bazi'
-import { getSolarTermDates, getCurrentSolarTerm, getDaysSinceSolarTerm } from '../data/jieqi'
+import { calcTimeShenSha } from '../engine/shensha'
+import type { TimeShenSha } from '../engine/shensha'
+import { getCurrentSolarTerm, getDaysSinceSolarTerm } from '../data/jieqi'
 import { usePaipanStore } from '../stores/paipan'
 
 const props = defineProps<{
   bazi: BaZi
   timestamp: Date
   kongwang: KongWang
+  /** 是否只读模式（ResultView中不可编辑） */
+  readonly?: boolean
+  /** 卦宫信息（用于计算世身/卦身） */
+  palace?: BaGua
+  palacePos?: number
 }>()
 
 const store = usePaipanStore()
@@ -20,6 +27,7 @@ const emit = defineEmits<{
 
 const dateTimeStr = ref('')
 const isEditing = ref(false)
+const shenshaExpanded = ref(false)
 
 onMounted(() => {
   dateTimeStr.value = formatDateTimeLocal(props.timestamp)
@@ -43,6 +51,7 @@ function onDateTimeChange() {
 }
 
 function toggleEdit() {
+  if (props.readonly) return
   if (isEditing.value) {
     onDateTimeChange()
   }
@@ -69,25 +78,66 @@ if (currentTerm) {
   jieqiText = '—'
 }
 
-/** 获取当前节气的结束日期 */
-function getNextTermDate(): string {
-  const year = props.timestamp.getFullYear()
-  const terms = getSolarTermDates(year)
-  if (!currentTerm) return ''
-  const nextIdx = terms.findIndex(t => t.index === currentTerm.index) + 1
-  if (nextIdx > 0 && nextIdx < terms.length) {
-    const nextTerm = terms[nextIdx]
-    return `${nextTerm.month}月${nextTerm.day}日`
-  }
-  return ''
-}
 
-const currentTermRange = (() => {
-  if (!currentTerm) return ''
-  const end = getNextTermDate()
-  if (!end) return ''
-  return `${currentTerm.month}月${currentTerm.day}日 — ${end}`
-})()
+// ---- 神煞计算 ----
+const hexagramInfo = computed(() => {
+  if (props.palace && props.palacePos !== undefined) {
+    return { palace: props.palace, palacePos: props.palacePos }
+  }
+  return undefined
+})
+
+const allShensha = computed<TimeShenSha[]>(() => {
+  return calcTimeShenSha(props.bazi, hexagramInfo.value)
+})
+
+/** 旬空 — 单独展示 */
+const kongwangText = computed(() => {
+  if (!props.kongwang || !props.kongwang.xun) return '—'
+  return `${props.kongwang.zhi1}${props.kongwang.zhi2}（${props.kongwang.xun}旬）`
+})
+
+/** 世身 - 单独展示 */
+const shiShenText = computed(() => {
+  const s = allShensha.value.find(s => s.name === '世身')
+  return s ? s.value : '—'
+})
+
+/** 卦身 - 单独展示 */
+const guaShenText = computed(() => {
+  const s = allShensha.value.find(s => s.name === '卦身')
+  return s ? s.value : '—'
+})
+
+/** 折叠区神煞列表（排除旬空/世身/卦身） */
+const collapsibleShensha = computed(() => {
+  return allShensha.value.filter(s => s.name !== '世身' && s.name !== '卦身')
+})
+
+/** 折叠预览：只显示驿马、桃花、贵人 */
+const previewShensha = computed(() => {
+  const preview: TimeShenSha[] = []
+  const shenshaMap = new Map(allShensha.value.map(s => [s.name, s]))
+  const previewNames: ShenShaType[] = ['驿马', '桃花', '天乙贵人']
+  for (const name of previewNames) {
+    const s = shenshaMap.get(name)
+    if (s) {
+      // 桃花显示为"咸池"
+      const displayName = name === '桃花' ? '咸池' : name
+      preview.push({ name: displayName as any, value: s.value })
+    }
+  }
+  return preview
+})
+
+/** 神煞显示名映射 */
+function getShenshaDisplayName(name: ShenShaType): string {
+  const map: Partial<Record<ShenShaType, string>> = {
+    '桃花': '咸池',
+    '天乙贵人': '贵人',
+  }
+  return map[name] || name
+}
 </script>
 
 <template>
@@ -97,17 +147,20 @@ const currentTermRange = (() => {
       <div class="grid grid-cols-2 gap-3 text-sm">
         <div>
           <span class="text-gray-500">起卦时间:</span>
-          <button @click="toggleEdit" class="ml-2 font-medium hover:text-[#8b0000] transition-colors cursor-pointer" :title="isEditing ? '保存' : '修改'">
-            {{ isEditing ? '✏️' : '' }}
-          </button>
-          <input
-            v-if="isEditing"
-            v-model="dateTimeStr"
-            type="datetime-local"
-            @change="onDateTimeChange"
-            class="ml-2 border rounded px-2 py-1 text-sm"
-            style="border-color: var(--border-color);"
-          />
+          <template v-if="!readonly">
+            <button @click="toggleEdit" class="ml-2 font-medium hover:text-[#8b0000] transition-colors cursor-pointer" :title="isEditing ? '保存' : '修改'">
+              {{ isEditing ? '✏️' : '' }}
+            </button>
+            <input
+              v-if="isEditing"
+              v-model="dateTimeStr"
+              type="datetime-local"
+              @change="onDateTimeChange"
+              class="ml-2 border rounded px-2 py-1 text-sm"
+              style="border-color: var(--border-color);"
+            />
+            <span v-else class="ml-2 font-medium">{{ formatTime(timestamp) }}</span>
+          </template>
           <span v-else class="ml-2 font-medium">{{ formatTime(timestamp) }}</span>
         </div>
         <div>
@@ -115,9 +168,6 @@ const currentTermRange = (() => {
           <span class="ml-2 text-green-700 font-medium">{{ jieqiText }}</span>
           <span v-if="currentTerm && daysSinceTerm > 0" class="ml-1 text-xs text-gray-400">
             (已过 {{ daysSinceTerm }} 天)
-          </span>
-          <span v-if="currentTermRange" class="ml-2 text-xs text-gray-400">
-            区间：{{ currentTermRange }}
           </span>
         </div>
       </div>
@@ -164,16 +214,61 @@ const currentTermRange = (() => {
         </div>
       </div>
 
-      <!-- 第四组：空亡信息 -->
-      <div v-if="displayOptions.showKongwang" class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
+      <!-- 第四组：神煞区域 -->
+      <div v-if="displayOptions.showKongwang || displayOptions.showShensha" class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">神煞</span>
           <span class="flex-1 h-px" :style="{ background: 'var(--border-color)' }"></span>
         </div>
-        <div class="text-sm">
-          <span class="text-gray-500">空亡:</span>
-          <span class="ml-2 font-bold text-red-600">{{ kongwang.zhi1 }}{{ kongwang.zhi2 }}</span>
-          <span v-if="kongwang.xun" class="ml-2 text-gray-400">（{{ kongwang.xun }}旬）</span>
+
+        <!-- 单独展示行：旬空 -->
+        <div v-if="displayOptions.showKongwang" class="text-sm mb-1">
+          <span class="text-gray-500">旬空:</span>
+          <span class="ml-2 font-bold text-red-600">{{ kongwangText }}</span>
+        </div>
+
+        <!-- 单独展示行：卦身 -->
+        <div v-if="displayOptions.showShensha" class="text-sm mb-1">
+          <span class="text-gray-500">卦身:</span>
+          <span class="ml-2 font-bold text-blue-600">{{ guaShenText }}</span>
+        </div>
+
+        <!-- 单独展示行：世身 -->
+        <div v-if="displayOptions.showShensha" class="text-sm mb-1">
+          <span class="text-gray-500">世身:</span>
+          <span class="ml-2 font-bold text-purple-600">{{ shiShenText }}</span>
+        </div>
+
+        <!-- 神煞折叠区（19个神煞） -->
+        <div v-if="displayOptions.showShensha && collapsibleShensha.length > 0" class="mt-2">
+          <!-- 折叠切换按钮 + 预览 -->
+          <button
+            @click="shenshaExpanded = !shenshaExpanded"
+            class="w-full flex items-center justify-between text-xs text-gray-500 hover:text-gray-700 py-1 px-2 rounded bg-gray-50 hover:bg-gray-100 transition-colors"
+          >
+            <div class="flex items-center gap-2">
+              <span>{{ shenshaExpanded ? '▼' : '▶' }}</span>
+              <span v-if="!shenshaExpanded" class="text-gray-400">
+                <span v-for="(s, i) in previewShensha" :key="i">
+                  {{ getShenshaDisplayName(s.name) }} — {{ s.value }}
+                  <span v-if="i < previewShensha.length - 1" class="mx-1">|</span>
+                </span>
+              </span>
+            </div>
+            <span class="text-gray-400">{{ shenshaExpanded ? '收起' : '展开全部' }}</span>
+          </button>
+
+          <!-- 展开列表 -->
+          <div v-if="shenshaExpanded" class="mt-1 space-y-0.5">
+            <div
+              v-for="s in collapsibleShensha"
+              :key="s.name"
+              class="text-xs px-2 py-0.5"
+              style="color: #666;"
+            >
+              {{ getShenshaDisplayName(s.name) }} — {{ s.value }}
+            </div>
+          </div>
         </div>
       </div>
     </div>

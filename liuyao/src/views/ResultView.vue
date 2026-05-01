@@ -112,11 +112,14 @@ function downloadJson() {
   </div>
 
   <div v-else>
-    <!-- 第1模块：时间信息 -->
+    <!-- 第1模块：时间信息（只读） -->
     <DateTimeInfo
       :bazi="result.bazi"
       :timestamp="result.timestamp"
       :kongwang="result.kongwang"
+      :readonly="true"
+      :palace="result.original.gong"
+      :palace-pos="result.original.palacePos"
     />
     <hr class="divider" />
 
