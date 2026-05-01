@@ -12,15 +12,6 @@ const options = store.displayOptions
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"
-          :checked="options.showGuaci"
-          @change="store.updateDisplayOptions({ showGuaci: !options.showGuaci })"
-          class="accent-[#8b0000]"
-        />
-        <span class="text-sm">卦辞</span>
-      </label>
-      <label class="flex items-center gap-2 cursor-pointer select-none">
-        <input
-          type="checkbox"
           :checked="options.showSanhe"
           @change="store.updateDisplayOptions({ showSanhe: !options.showSanhe })"
           class="accent-[#8b0000]"
@@ -39,29 +30,11 @@ const options = store.displayOptions
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"
-          :checked="options.showFuShen"
-          @change="store.updateDisplayOptions({ showFuShen: !options.showFuShen })"
-          class="accent-[#8b0000]"
-        />
-        <span class="text-sm">伏神</span>
-      </label>
-      <label class="flex items-center gap-2 cursor-pointer select-none">
-        <input
-          type="checkbox"
           :checked="options.showWangShuai"
           @change="store.updateDisplayOptions({ showWangShuai: !options.showWangShuai })"
           class="accent-[#8b0000]"
         />
         <span class="text-sm">旺衰</span>
-      </label>
-      <label class="flex items-center gap-2 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          :checked="options.showShensha"
-          @change="store.updateDisplayOptions({ showShensha: !options.showShensha })"
-          class="accent-[#8b0000]"
-        />
-        <span class="text-sm">神煞</span>
       </label>
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input

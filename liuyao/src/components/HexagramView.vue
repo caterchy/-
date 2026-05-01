@@ -70,9 +70,8 @@ const detailOpen = ref(false)
 
       <!-- 彖传象传（折叠） -->
       <div v-if="showDetail && (gua.tuancizhuan || gua.xiangzhuan)" class="mt-2 border-t border-[#d4c5a9] pt-2">
-        <button @click="detailOpen = !detailOpen" class="text-xs text-[#8b0000] hover:underline flex items-center gap-1 mx-auto">
-          <span>{{ detailOpen ? '△' : '▽' }}</span>
-          <span>十翼</span>
+        <button @click="detailOpen = !detailOpen" class="text-xs text-gray-400 hover:text-gray-600 transition-colors mx-auto" style="background: none; border: none; padding: 0; cursor: pointer; display: block;">
+          <span>{{ detailOpen ? '收起' : '展开' }} 十翼</span>
         </button>
         <div v-if="detailOpen" class="mt-2 space-y-2 text-xs text-gray-600 leading-relaxed max-w-[240px]">
           <div v-if="gua.tuancizhuan">

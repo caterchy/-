@@ -7,37 +7,24 @@ const emit = defineEmits<{
   complete: [yaos: Yao[]]
 }>()
 
-const numberMode = ref<'three' | 'one'>('three')
-const num1 = ref('')
-const num2 = ref('')
-const num3 = ref('')
+const numberMode = ref<'double' | 'single'>('single')
+const numA = ref('')
+const numB = ref('')
 const singleNum = ref('')
 
 const canSubmit = computed(() => {
-  if (numberMode.value === 'three') {
-    return num1.value.trim() !== '' && num2.value.trim() !== '' && num3.value.trim() !== ''
+  if (numberMode.value === 'double') {
+    return numA.value.trim() !== '' && numB.value.trim() !== ''
   }
   return singleNum.value.trim() !== ''
 })
 
 function startDivination() {
   let yaos: Yao[]
-  if (numberMode.value === 'three') {
-    const a = parseInt(num1.value) || 0
-    const b = parseInt(num2.value) || 0
-    const c = parseInt(num3.value) || 0
-    // Three numbers: first → upper trigram, second → lower trigram, third → moving yao
-    // Decode a and b into trigrams via divineByTwoNumbers
+  if (numberMode.value === 'double') {
+    const a = parseInt(numA.value) || 0
+    const b = parseInt(numB.value) || 0
     yaos = divineByTwoNumbers(a, b)
-    // Override moving yao with third number
-    const dongPos = c % 6
-    yaos = yaos.map((y, i) => ({
-      ...y,
-      changing: i === dongPos,
-      type: i === dongPos
-        ? (y.yang ? '老阳' as const : '老阴' as const)
-        : (y.yang ? '少阳' as const : '少阴' as const),
-    }))
   } else {
     yaos = divineBySingleNumber(parseInt(singleNum.value) || 0)
   }
@@ -47,65 +34,26 @@ function startDivination() {
 
 <template>
   <div class="space-y-4">
-    <p class="text-sm text-gray-500">输入数字以起卦</p>
-
     <!-- Mode toggle -->
     <div class="flex gap-2">
       <button
-        @click="numberMode = 'three'"
+        @click="numberMode = 'single'"
         class="flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all"
-        :class="numberMode === 'three'
-          ? 'border-[#8b0000] text-[#8b0000] bg-red-50'
-          : 'border-gray-200 text-gray-500 hover:border-gray-300'"
-      >三数起卦</button>
-      <button
-        @click="numberMode = 'one'"
-        class="flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all"
-        :class="numberMode === 'one'
+        :class="numberMode === 'single'
           ? 'border-[#8b0000] text-[#8b0000] bg-red-50'
           : 'border-gray-200 text-gray-500 hover:border-gray-300'"
       >单数起卦</button>
-    </div>
-
-    <!-- Three numbers -->
-    <div v-if="numberMode === 'three'" class="space-y-3">
-      <p class="text-xs text-gray-400">第一个数字（除8取余）→ 上卦，第二个数字（除8取余）→ 下卦，第三个数字（除6取余）→ 动爻</p>
-      <div class="grid grid-cols-3 gap-3">
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">数字一（上卦）</label>
-          <input
-            v-model="num1"
-            type="number"
-            placeholder="如 3"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-          />
-        </div>
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">数字二（下卦）</label>
-          <input
-            v-model="num2"
-            type="number"
-            placeholder="如 8"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-          />
-        </div>
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">数字三（动爻）</label>
-          <input
-            v-model="num3"
-            type="number"
-            placeholder="如 4"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-          />
-        </div>
-      </div>
+      <button
+        @click="numberMode = 'double'"
+        class="flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all"
+        :class="numberMode === 'double'
+          ? 'border-[#8b0000] text-[#8b0000] bg-red-50'
+          : 'border-gray-200 text-gray-500 hover:border-gray-300'"
+      >双数起卦</button>
     </div>
 
     <!-- Single number -->
-    <div v-else>
+    <div v-if="numberMode === 'single'">
       <label class="text-xs text-gray-500 mb-1 block">输入数字</label>
       <input
         v-model="singleNum"
@@ -114,7 +62,32 @@ function startDivination() {
         class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
                focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
       />
-      <p class="text-xs text-gray-400 mt-1">数字将分成前后两段，分别计算上下卦</p>
+    </div>
+
+    <!-- Double numbers -->
+    <div v-else class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">数字一</label>
+          <input
+            v-model="numA"
+            type="number"
+            placeholder="如 3"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
+          />
+        </div>
+        <div>
+          <label class="text-xs text-gray-500 mb-1 block">数字二</label>
+          <input
+            v-model="numB"
+            type="number"
+            placeholder="如 8"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
+          />
+        </div>
+      </div>
     </div>
 
     <button

@@ -229,5 +229,5 @@ export function calcBaZi(date: Date): BaZi {
 
 /** 格式化八字为字符串 */
 export function formatBaZi(bazi: BaZi): string {
-  return `${bazi.nian.gan}${bazi.nian.zhi} ${bazi.yue.gan}${bazi.yue.zhi} ${bazi.ri.gan}${bazi.ri.zhi} ${bazi.shi.gan}${bazi.shi.zhi}`
+  return `${bazi.nian.gan}${bazi.nian.zhi}年 ${bazi.yue.gan}${bazi.yue.zhi}月 ${bazi.ri.gan}${bazi.ri.zhi}日 ${bazi.shi.gan}${bazi.shi.zhi}时`
 }

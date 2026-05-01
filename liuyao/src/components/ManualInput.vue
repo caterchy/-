@@ -79,22 +79,20 @@ function submit() {
       <p>三正面=老阳(动)、二正一反=少阳、一正二反=少阴、三反面=老阴(动)</p>
     </div>
 
-    <!-- 已选结果预览 -->
-    <div class="hexagram-center gap-2 mb-6">
-      <div
-        v-for="(sel, i) in selections"
-        :key="i"
-        class="w-10 h-10 rounded border-2 flex items-center justify-center text-sm font-bold relative"
-        :class="[
-          i < currentStep || (i === currentStep && confirmed)
-            ? 'border-gray-300 bg-gray-50'
-            : 'border-gray-300 bg-gray-50 text-gray-300',
-          i === currentStep && !confirmed ? 'ring-2 ring-[#8b0000]' : '',
-        ]"
-        style="color: #333;"
-      >
-        {{ i < currentStep || (i === currentStep && confirmed) ? (OPTIONS[sel].yang ? '⚊' : '⚋') : '?' }}
-        <span v-if="i < currentStep && OPTIONS[sel].changing" class="ml-1 text-[#c00] text-xs font-bold">→</span>
+    <!-- 已选结果预览：horizontal lines bottom-to-top -->
+    <div class="hexagram-center mb-6">
+      <div class="flex flex-col items-center gap-1">
+        <div
+          v-for="(sel, i) in [...selections].reverse()"
+          :key="i"
+          class="flex items-center gap-2"
+        >
+          <span class="text-xs text-gray-400 w-4 text-right">{{ POSITION_NAMES[selections.length - 1 - i] }}</span>
+          <span class="font-mono text-base" style="color: #333;">
+            {{ OPTIONS[sel].yang ? '━━━━━' : '━ ━━' }}
+          </span>
+          <span v-if="OPTIONS[sel].changing" class="text-[#c00] font-bold text-sm">{{ OPTIONS[sel].yang ? '○' : '×' }}</span>
+        </div>
       </div>
     </div>
 

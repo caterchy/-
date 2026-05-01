@@ -9,40 +9,31 @@ const POSITION_LABELS = ['初', '二', '三', '四', '五', '上']
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
     <h3 class="text-sm font-bold text-gray-700 mb-3">排盘预览</h3>
 
     <!-- Original hexagram -->
     <div class="bg-[#faf5eb] rounded-lg p-4 border border-[#d4c5a9]/40">
-      <div class="flex flex-col-reverse gap-1.5">
+      <div class="flex flex-col items-center gap-1">
         <div
-          v-for="(yao, i) in result.original.yaos"
+          v-for="(yao, i) in [...result.original.yaos].reverse()"
           :key="i"
-          class="flex items-center gap-3 py-1.5 px-2 rounded transition-colors"
-          :class="yao.yao.changing ? 'bg-amber-50/80' : ''"
+          class="flex items-center gap-2 py-0.5 px-2"
+          :class="yao.yao.changing ? 'bg-amber-50/60 rounded' : ''"
         >
           <!-- Position label -->
-          <span class="w-8 text-xs text-gray-400 shrink-0">{{ POSITION_LABELS[i] }}爻</span>
+          <span class="w-8 text-xs text-gray-400 shrink-0 text-right">{{ POSITION_LABELS[result.original.yaos.length - 1 - i] }}爻</span>
 
-          <!-- Yang line -->
-          <div v-if="yao.yao.yang" class="h-2 bg-red-600 rounded-full w-16" />
-
-          <!-- Yin line -->
-          <div v-else class="flex items-center gap-1.5 w-16">
-            <div class="h-2 bg-blue-600 rounded-full flex-1" />
-            <div class="w-1.5" />
-            <div class="h-2 bg-blue-600 rounded-full flex-1" />
-          </div>
+          <!-- Horizontal line -->
+          <span class="font-mono text-base" style="color: #333;">
+            {{ yao.yao.yang ? '━━━━━' : '━ ━━' }}
+          </span>
 
           <!-- Changing marker -->
-          <span
-            v-if="yao.yao.changing"
-            class="text-emerald-600 text-xs font-bold shrink-0"
-          >● 动</span>
-          <span v-else class="text-xs text-transparent shrink-0 select-none">·</span>
+          <span v-if="yao.yao.changing" class="text-[#c00] font-bold text-sm shrink-0">{{ yao.yao.yang ? '○' : '×' }}</span>
 
           <!-- Najia -->
-          <span class="text-xs text-gray-400 ml-auto shrink-0">{{ yao.najia.gan }}{{ yao.najia.zhi }}</span>
+          <span class="text-xs text-gray-400 shrink-0">{{ yao.najia.gan }}{{ yao.najia.zhi }}</span>
         </div>
       </div>
 

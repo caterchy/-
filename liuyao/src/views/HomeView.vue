@@ -13,21 +13,6 @@ const store = usePaipanStore()
 const showResult = ref(false)
 const resultRef = ref<HTMLElement | null>(null)
 
-// 备注功能：双字段 + 标签
-const questionText = ref('')
-const resultText = ref('')
-const presetTags = ['已验证', '待验证', '错卦', '参考', '教学'] as const
-const selectedTags = ref<string[]>([])
-
-function toggleTag(tag: string) {
-  const idx = selectedTags.value.indexOf(tag)
-  if (idx === -1) {
-    selectedTags.value.push(tag)
-  } else {
-    selectedTags.value.splice(idx, 1)
-  }
-}
-
 function onDivinationComplete(yaos: Yao[], method: DivinationMethod) {
   let result
   if (method === 'auto') {
@@ -40,11 +25,6 @@ function onDivinationComplete(yaos: Yao[], method: DivinationMethod) {
   store.saveToHistory(result)
   showResult.value = true
 
-  // Reset notes for new result
-  questionText.value = ''
-  resultText.value = ''
-  selectedTags.value = []
-
   // Scroll to result
   nextTick(() => {
     resultRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -52,20 +32,11 @@ function onDivinationComplete(yaos: Yao[], method: DivinationMethod) {
 }
 
 function goToResult() {
-  const question = questionText.value.trim()
-  const result = resultText.value.trim()
-  const tags = selectedTags.value
-  if (question || result || tags.length > 0) {
-    store.updateNote({ question, result, tags })
-  }
   router.push('/result')
 }
 
 function resetDivination() {
   showResult.value = false
-  questionText.value = ''
-  resultText.value = ''
-  selectedTags.value = []
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -105,50 +76,6 @@ const METHOD_LABELS: Record<DivinationMethod, string> = {
 
       <!-- Hexagram Preview -->
       <HexagramPreview :result="store.currentResult" />
-
-      <!-- Note section (双字段 + 标签) -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5">
-        <h3 class="text-sm font-bold text-gray-700 mb-3">备注</h3>
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs text-gray-500 mb-1 block">占卜问题</label>
-            <input
-              v-model="questionText"
-              placeholder="例如：占问明日面试结果"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30 transition-all duration-200 bg-gray-50 hover:bg-white"
-              maxlength="200"
-            />
-          </div>
-          <div>
-            <label class="text-xs text-gray-500 mb-1 block">占卜结果</label>
-            <textarea
-              v-model="resultText"
-              placeholder="记录应验情况..."
-              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none
-                     focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30 transition-all duration-200 bg-gray-50 hover:bg-white"
-              rows="2"
-              maxlength="500"
-            />
-          </div>
-          <div>
-            <label class="text-xs text-gray-500 mb-1 block">标签</label>
-            <div class="flex gap-1.5 flex-wrap">
-              <button
-                v-for="tag in presetTags"
-                :key="tag"
-                @click="toggleTag(tag)"
-                class="px-2.5 py-1 rounded-full text-xs font-bold border transition-all"
-                :class="selectedTags.includes(tag)
-                  ? 'bg-[#8b0000]/10 border-[#8b0000]/30 text-[#8b0000]'
-                  : 'border-gray-200 text-gray-400 hover:border-gray-300'"
-              >
-                {{ tag }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Action buttons -->
       <div class="flex gap-3 pt-1">

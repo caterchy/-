@@ -5,7 +5,6 @@ import { formatBaZi } from '../engine/bazi'
 import { calcTimeShenSha } from '../engine/shensha'
 import type { TimeShenSha } from '../engine/shensha'
 import { getCurrentSolarTerm, getDaysSinceSolarTerm } from '../data/jieqi'
-import { usePaipanStore } from '../stores/paipan'
 
 const props = defineProps<{
   bazi: BaZi
@@ -17,9 +16,6 @@ const props = defineProps<{
   palace?: BaGua
   palacePos?: number
 }>()
-
-const store = usePaipanStore()
-const displayOptions = store.displayOptions
 
 const emit = defineEmits<{
   change: [date: Date]
@@ -109,25 +105,9 @@ const guaShenText = computed(() => {
   return s ? s.value : '—'
 })
 
-/** 折叠区神煞列表（排除旬空/世身/卦身） */
+/** 神煞列表（排除旬空/世身/卦身） */
 const collapsibleShensha = computed(() => {
   return allShensha.value.filter(s => s.name !== '世身' && s.name !== '卦身')
-})
-
-/** 折叠预览：只显示驿马、桃花、贵人 */
-const previewShensha = computed(() => {
-  const preview: TimeShenSha[] = []
-  const shenshaMap = new Map(allShensha.value.map(s => [s.name, s]))
-  const previewNames: ShenShaType[] = ['驿马', '桃花', '天乙贵人']
-  for (const name of previewNames) {
-    const s = shenshaMap.get(name)
-    if (s) {
-      // 桃花显示为"咸池"
-      const displayName = name === '桃花' ? '咸池' : name
-      preview.push({ name: displayName as any, value: s.value })
-    }
-  }
-  return preview
 })
 
 /** 神煞显示名映射 */
@@ -172,7 +152,7 @@ function getShenshaDisplayName(name: ShenShaType): string {
         </div>
       </div>
 
-      <!-- 第二组：四柱八字和月建日辰 -->
+      <!-- 第二组：四柱八字 -->
       <div class="border-t pt-3 space-y-2" :style="{ borderColor: 'var(--border-color)' }">
         <div class="flex items-center gap-2">
           <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">四柱</span>
@@ -181,6 +161,30 @@ function getShenshaDisplayName(name: ShenShaType): string {
         <div>
           <span class="text-gray-500">八字:</span>
           <span class="ml-2 font-mono font-bold text-[#8b0000] text-lg">{{ formatBaZi(bazi) }}</span>
+        </div>
+
+        <!-- 旬空/卦身/世身 - 独立显示，在八字下方 -->
+        <div class="flex flex-wrap gap-4 text-sm">
+          <div class="bg-red-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
+            <span class="text-gray-500 text-xs">旬空</span>
+            <span class="ml-1 font-bold text-red-600">{{ kongwangText }}</span>
+          </div>
+          <div class="bg-blue-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
+            <span class="text-gray-500 text-xs">卦身</span>
+            <span class="ml-1 font-bold text-blue-600">{{ guaShenText }}</span>
+          </div>
+          <div class="bg-purple-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
+            <span class="text-gray-500 text-xs">世身</span>
+            <span class="ml-1 font-bold text-purple-600">{{ shiShenText }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三组：月建日辰 -->
+      <div class="border-t pt-3 space-y-2" :style="{ borderColor: 'var(--border-color)' }">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">月日</span>
+          <span class="flex-1 h-px" :style="{ background: 'var(--border-color)' }"></span>
         </div>
         <div class="flex flex-wrap gap-4 text-sm">
           <div class="bg-orange-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
@@ -196,79 +200,31 @@ function getShenshaDisplayName(name: ShenShaType): string {
         </div>
       </div>
 
-      <!-- 第三组：其他柱支 -->
-      <div class="border-t pt-3 space-y-2" :style="{ borderColor: 'var(--border-color)' }">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">柱支</span>
-          <span class="flex-1 h-px" :style="{ background: 'var(--border-color)' }"></span>
-        </div>
-        <div class="grid grid-cols-2 gap-3 text-sm text-gray-600">
-          <div class="bg-gray-50 rounded px-3 py-1.5" style="border-radius: var(--radius);">
-            <span class="text-gray-400 text-xs">年柱</span>
-            <span class="ml-2 font-medium">{{ bazi.nian.gan }}{{ bazi.nian.zhi }}（{{ bazi.nian.wuxing }}）</span>
-          </div>
-          <div class="bg-gray-50 rounded px-3 py-1.5" style="border-radius: var(--radius);">
-            <span class="text-gray-400 text-xs">时柱</span>
-            <span class="ml-2 font-medium">{{ bazi.shi.gan }}{{ bazi.shi.zhi }}（{{ bazi.shi.wuxing }}）</span>
-          </div>
-        </div>
-      </div>
+      <!-- 第四组：神煞（可折叠） -->
+      <div class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
+        <!-- 折叠切换 - text link style -->
+        <button
+          @click="shenshaExpanded = !shenshaExpanded"
+          class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          style="background: none; border: none; padding: 0; cursor: pointer;"
+        >
+          <span v-if="!shenshaExpanded">展开 神煞</span>
+          <span v-else>收起 神煞</span>
+        </button>
 
-      <!-- 第四组：神煞区域 -->
-      <div v-if="displayOptions.showKongwang || displayOptions.showShensha" class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
-        <div class="flex items-center gap-2 mb-1.5">
-          <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">神煞</span>
-          <span class="flex-1 h-px" :style="{ background: 'var(--border-color)' }"></span>
-        </div>
-
-        <!-- 单独展示行：旬空 -->
-        <div v-if="displayOptions.showKongwang" class="text-sm mb-1">
-          <span class="text-gray-500">旬空:</span>
-          <span class="ml-2 font-bold text-red-600">{{ kongwangText }}</span>
-        </div>
-
-        <!-- 单独展示行：卦身 -->
-        <div v-if="displayOptions.showShensha" class="text-sm mb-1">
-          <span class="text-gray-500">卦身:</span>
-          <span class="ml-2 font-bold text-blue-600">{{ guaShenText }}</span>
-        </div>
-
-        <!-- 单独展示行：世身 -->
-        <div v-if="displayOptions.showShensha" class="text-sm mb-1">
-          <span class="text-gray-500">世身:</span>
-          <span class="ml-2 font-bold text-purple-600">{{ shiShenText }}</span>
-        </div>
-
-        <!-- 神煞折叠区（19个神煞） -->
-        <div v-if="displayOptions.showShensha && collapsibleShensha.length > 0" class="mt-2">
-          <!-- 折叠切换按钮 + 预览 -->
-          <button
-            @click="shenshaExpanded = !shenshaExpanded"
-            class="w-full flex items-center justify-between text-xs text-gray-500 hover:text-gray-700 py-1 px-2 rounded bg-gray-50 hover:bg-gray-100 transition-colors"
+        <!-- 展开列表 -->
+        <div v-if="shenshaExpanded && collapsibleShensha.length > 0" class="mt-1 space-y-0.5">
+          <div
+            v-for="s in collapsibleShensha"
+            :key="s.name"
+            class="text-xs px-2 py-0.5"
+            style="color: #666;"
           >
-            <div class="flex items-center gap-2">
-              <span>{{ shenshaExpanded ? '▼' : '▶' }}</span>
-              <span v-if="!shenshaExpanded" class="text-gray-400">
-                <span v-for="(s, i) in previewShensha" :key="i">
-                  {{ getShenshaDisplayName(s.name) }} — {{ s.value }}
-                  <span v-if="i < previewShensha.length - 1" class="mx-1">|</span>
-                </span>
-              </span>
-            </div>
-            <span class="text-gray-400">{{ shenshaExpanded ? '收起' : '展开全部' }}</span>
-          </button>
-
-          <!-- 展开列表 -->
-          <div v-if="shenshaExpanded" class="mt-1 space-y-0.5">
-            <div
-              v-for="s in collapsibleShensha"
-              :key="s.name"
-              class="text-xs px-2 py-0.5"
-              style="color: #666;"
-            >
-              {{ getShenshaDisplayName(s.name) }} — {{ s.value }}
-            </div>
+            {{ getShenshaDisplayName(s.name) }} — {{ s.value }}
           </div>
+        </div>
+        <div v-if="shenshaExpanded && collapsibleShensha.length === 0" class="mt-1 text-xs text-gray-400">
+          无
         </div>
       </div>
     </div>

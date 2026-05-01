@@ -24,11 +24,10 @@ const POSITION_NAMES = ['初', '二', '三', '四', '五', '上']
     <div class="mt-2 border-t border-gray-100 pt-2">
       <button
         @click="yaociOpen = !yaociOpen"
-        class="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        style="background: none; border: none; padding: 0; cursor: pointer;"
       >
-        <span class="text-xs">{{ yaociOpen ? '▾' : '▸' }}</span>
-        <span>爻辞</span>
-        <span class="text-gray-300">({{ gua.yaos.length }}条)</span>
+        <span>{{ yaociOpen ? '收起' : '展开' }} 爻辞 ({{ gua.yaos.length }}条)</span>
       </button>
       <div v-if="yaociOpen" class="mt-2 space-y-1.5">
         <div

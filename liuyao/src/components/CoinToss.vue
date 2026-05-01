@@ -17,6 +17,8 @@ const isAnimating = ref(false)
 const coins = ref<CoinFace[]>([null, null, null])
 const showResult = ref(false)
 const lastResultText = ref('')
+const lastHeadCount = ref(0)
+const lastBackCount = ref(0)
 
 // Independent flip animation tracking per coin
 const coinFlipping = ref<boolean[]>([false, false, false])
@@ -43,21 +45,24 @@ function doToss() {
     Math.random() < 0.5 ? 'heads' : 'tails'
   )
   const headCount = results.filter(r => r === 'heads').length
+  const backCount = 3 - headCount
+  lastHeadCount.value = headCount
+  lastBackCount.value = backCount
 
   // Determine yao from head count
   let yao: Yao
   if (headCount === 3) {
     yao = { yang: true, changing: true, type: '老阳' }
-    lastResultText.value = '三正面（老阳）⚊○ 动爻'
+    lastResultText.value = '三正（老阳）'
   } else if (headCount === 2) {
     yao = { yang: true, changing: false, type: '少阳' }
-    lastResultText.value = '二正一反（少阳）⚊'
+    lastResultText.value = '二正一反（少阳）'
   } else if (headCount === 1) {
     yao = { yang: false, changing: false, type: '少阴' }
-    lastResultText.value = '一正二反（少阴）⚋'
+    lastResultText.value = '一正二反（少阴）'
   } else {
     yao = { yang: false, changing: true, type: '老阴' }
-    lastResultText.value = '三反面（老阴）⚋× 动爻'
+    lastResultText.value = '三反（老阴）'
   }
 
   // Staggered flip: each coin starts its animation at a different time
@@ -68,7 +73,7 @@ function doToss() {
   })
 
   // End animation and show results
-  const animDuration = 400 + 2 * 100 // last coin start + flip duration
+  const animDuration = 400 + 2 * 100
   setTimeout(() => {
     coins.value = results
     yaos.value.push(yao)
@@ -130,6 +135,12 @@ function reset() {
       </div>
     </div>
 
+    <!-- Coin count display -->
+    <div v-if="showResult" class="flex justify-center gap-6 mb-3 text-sm">
+      <span class="text-red-600 font-bold">正: {{ lastHeadCount }}</span>
+      <span class="text-blue-600 font-bold">背: {{ lastBackCount }}</span>
+    </div>
+
     <!-- Toss button -->
     <div class="mb-4">
       <button
@@ -159,22 +170,20 @@ function reset() {
       {{ lastResultText }}
     </div>
 
-    <!-- Accumulated yaos: 纵向从下到上（初爻在下，上爻在上） -->
+    <!-- Accumulated yaos: horizontal lines from bottom to top -->
     <div v-if="yaos.length > 0" class="mt-4">
       <div class="text-xs text-gray-400 mb-2">已生成:</div>
-      <div class="hexagram-center flex-col gap-1">
+      <div class="flex flex-col items-center gap-1">
         <div
           v-for="(y, i) in [...yaos].reverse()"
           :key="i"
           class="flex items-center gap-2"
         >
           <span class="text-xs text-gray-400 w-4 text-right">{{ POSITION_NAMES[yaos.length - 1 - i] }}</span>
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded border-2 flex items-center justify-center text-base sm:text-lg font-bold border-gray-300 bg-gray-50"
-            style="color: #333;"
-          >
-            {{ y.yang ? '⚊' : '⚋' }}
-          </div>
-          <span v-if="y.changing" class="text-[#c00] font-bold" style="margin-left: 8px;">→</span>
+          <span class="font-mono text-base" style="color: #333;">
+            {{ y.yang ? '━━━━━' : '━ ━━' }}
+          </span>
+          <span v-if="y.changing" class="text-[#c00] font-bold text-sm">{{ y.type === '老阳' ? '○' : '×' }}</span>
         </div>
       </div>
     </div>
