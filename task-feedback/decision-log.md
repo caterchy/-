@@ -57,3 +57,36 @@
 - **决策**: Debug/开发修复 Bug 后必须通知项目经理立即更新状态文档，禁止同一 Bug 重复修复
 - **原因**: 修复后状态未同步到文档导致总负责人不知情、Bug 被反复分配重复修复
 - **影响**: 修改 `agent_hierarchy.md`（新增第5条协作规则）、`feedback_mechanism.md`（新增 Bug 修复闭环流程小节）；涉及 Debug、开发、项目经理三个角色的协作流程变更
+
+### 2026-05-02: 共享部署方案 — Gitee Pages（中国大陆免翻墙）
+- **决策**: 推荐 Gitee Pages 作为正式发布方案，阿里云 OSS / 腾讯云静态托管为备选，局域网 `--host` 用于临时测试
+- **原因**: 纯前端应用仅需静态托管；用户在中国大陆，GitHub Pages / Vercel / Netlify 需翻墙才能访问，改为推荐国内可直接访问的 Gitee Pages
+- **影响**: 更新 `docs/deploy-guide.md` 替换方案为 Gitee Pages、阿里云 OSS、腾讯云静态托管
+- **构建状态**: `npm run build` 输出到 `dist/` 目录，所有部署方式基于此产物
+
+### 2026-05-02: 测试反馈分类与分级处理机制
+- **决策**: 项目经理在收到测试报告后，对问题做「直接修复类」和「需人工审核类」分类，分别走不同处理流程。二轮验证中测试只判断问题是否修复，不提新问题
+- **原因**: 之前所有问题混在一起处理，开发修复后测试可能提新问题导致范围蔓延，需人工决策的问题没有汇总机制
+- **影响**: 
+  - 修改 `feedback_mechanism.md`（反馈流程图、新增反馈分类小节、Bug 闭环流程重写）
+  - 修改 `agent_hierarchy.md`（项目经理增加分类职责、Bug 修复规则重写）
+  - 修改 `agents/project_manager.md`（增加分类标准和流程）
+  - 修改 `agents/test.md`（增加二轮验证不提新问题的约束）
+  - 修改 `agents/developer.md`（增加分类感知的工作流程）
+
+### 2026-05-02: 产品经理确认文字问题处理方案
+- **决策**: 1-4直接修复，7保持"错卦"不动，5-6列入后续计划
+- **原因**: 抛硬币术语统一、冒号全角化、掷币空格删除、导航标题统一为"卦库"为直接修复项；confirm()弹窗改造和emoji改文字图标为后续优化项；"错卦"术语保持不动无需修改
+- **影响**:
+  - 直接修复: CoinToss.vue (5处修改)、ManualInput.vue (1处)、DateTimeInfo.vue (2处)、HexagramLibraryView.vue (1处)
+  - 后续计划: checklist.md 追加 O-1、O-2 两项
+
+### 2026-05-02: v1.0.0 — 部署 SPA 路由修复 + 文档重构
+- **决策**: vite.config.ts base 从 `/liuyao/` 改为 `/`，与路由器 base `/` 一致；README 重构为使用文档
+- **原因**: base 不一致导致部署后首页空白（路由不匹配初始路径），需与 `createWebHistory('/')` 对齐；README 技术架构文档对使用者无帮助，改为以使用功能为主
+- **影响**:
+  - `vite.config.ts`: base `/liuyao/` → `/`
+  - `docs/deploy-guide.md`: 补充 SPA 路由一致性提醒
+  - `README.md`: 全量重写，聚焦使用和功能
+  - `package.json`: 版本 0.0.0 → 1.0.0
+  - 同步推送到 GitHub 远程仓库
