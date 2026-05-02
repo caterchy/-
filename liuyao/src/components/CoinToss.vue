@@ -121,7 +121,7 @@ function reset() {
         class="coin-container"
         :class="{
           'coin-spinning': isAnimating && !coinFlipping[i - 1] && coins[i - 1] === null,
-          'coin-flipped': coinFlipping[i - 1] || coins[i - 1] !== null,
+          'coin-flipped': coinFlipping[i - 1] || (!isAnimating && coins[i - 1] === 'tails'),
         }"
       >
         <div class="coin-inner">
@@ -177,12 +177,14 @@ function reset() {
         <div
           v-for="(y, i) in [...yaos].reverse()"
           :key="i"
-          class="flex items-center gap-2"
+          class="flex items-center justify-between w-full max-w-[220px] mx-auto"
         >
-          <span class="text-xs text-gray-400 w-4 text-right">{{ POSITION_NAMES[yaos.length - 1 - i] }}</span>
-          <span class="font-mono text-base" style="color: #333;">
-            {{ y.yang ? '━━━━━' : '━ ━━' }}
-          </span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-400 w-4 text-right">{{ POSITION_NAMES[yaos.length - 1 - i] }}</span>
+            <span class="font-mono text-lg shrink-0" style="color: #333; letter-spacing: 0.1em;">
+              {{ y.yang ? '⚊' : '⚋' }}
+            </span>
+          </div>
           <span v-if="y.changing" class="text-[#c00] font-bold text-sm">{{ y.type === '老阳' ? '○' : '×' }}</span>
         </div>
       </div>

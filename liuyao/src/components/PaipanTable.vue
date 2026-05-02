@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { usePaipanStore } from '../stores/paipan'
 import type { GuaDetail } from '../types'
 
@@ -8,9 +9,11 @@ const props = defineProps<{
 }>()
 
 const store = usePaipanStore()
-const displayOptions = store.displayOptions
+const { displayOptions } = storeToRefs(store)
 
-const showAnDong = computed(() => props.gua.yaos.some(y => y.isAnDong || y.anDongReason === '月破'))
+const showAnDong = computed(() =>
+  displayOptions.value.showAnDong && props.gua.yaos.some(y => y.isAnDong || y.anDongReason === '月破' || y.isRiPo)
+)
 
 function getYaoSymbol(yang: boolean, changing: boolean): string {
   if (changing) return yang ? '○' : '×'
@@ -81,6 +84,10 @@ const POSITION_NAMES = ['初', '二', '三', '四', '五', '上']
             <span v-else-if="y.anDongReason === '月破'" class="inline-flex items-center gap-1 text-xs font-medium">
               <span class="w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded flex items-center justify-center">破</span>
               月破
+            </span>
+            <span v-else-if="y.isRiPo" class="inline-flex items-center gap-1 text-xs font-medium">
+              <span class="w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded flex items-center justify-center">破</span>
+              日破
             </span>
             <span v-else class="text-gray-300">—</span>
           </td>

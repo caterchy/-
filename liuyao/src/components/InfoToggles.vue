@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { usePaipanStore } from '../stores/paipan'
 
 const store = usePaipanStore()
-const options = store.displayOptions
+const { displayOptions } = storeToRefs(store)
 </script>
 
 <template>
@@ -12,8 +13,8 @@ const options = store.displayOptions
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"
-          :checked="options.showSanhe"
-          @change="store.updateDisplayOptions({ showSanhe: !options.showSanhe })"
+          :checked="displayOptions.showSanhe"
+          @change="store.updateDisplayOptions({ showSanhe: ($event.target as HTMLInputElement).checked })"
           class="accent-[#8b0000]"
         />
         <span class="text-sm">三合局</span>
@@ -21,8 +22,8 @@ const options = store.displayOptions
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"
-          :checked="options.showFanyin"
-          @change="store.updateDisplayOptions({ showFanyin: !options.showFanyin })"
+          :checked="displayOptions.showFanyin"
+          @change="store.updateDisplayOptions({ showFanyin: ($event.target as HTMLInputElement).checked })"
           class="accent-[#8b0000]"
         />
         <span class="text-sm">反吟伏吟</span>
@@ -30,8 +31,8 @@ const options = store.displayOptions
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"
-          :checked="options.showWangShuai"
-          @change="store.updateDisplayOptions({ showWangShuai: !options.showWangShuai })"
+          :checked="displayOptions.showWangShuai"
+          @change="store.updateDisplayOptions({ showWangShuai: ($event.target as HTMLInputElement).checked })"
           class="accent-[#8b0000]"
         />
         <span class="text-sm">旺衰</span>
@@ -39,11 +40,20 @@ const options = store.displayOptions
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input
           type="checkbox"
-          :checked="options.showKongwang"
-          @change="store.updateDisplayOptions({ showKongwang: !options.showKongwang })"
+          :checked="displayOptions.showKongwang"
+          @change="store.updateDisplayOptions({ showKongwang: ($event.target as HTMLInputElement).checked })"
           class="accent-[#8b0000]"
         />
         <span class="text-sm">空亡</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          :checked="displayOptions.showAnDong"
+          @change="store.updateDisplayOptions({ showAnDong: ($event.target as HTMLInputElement).checked })"
+          class="accent-[#8b0000]"
+        />
+        <span class="text-sm">暗动/日破</span>
       </label>
     </div>
   </div>

@@ -57,7 +57,9 @@ function startDivination() {
       <label class="text-xs text-gray-500 mb-1 block">输入数字</label>
       <input
         v-model="singleNum"
-        type="number"
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
         placeholder="如 2652"
         class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
                focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
@@ -71,7 +73,9 @@ function startDivination() {
           <label class="text-xs text-gray-500 mb-1 block">数字一</label>
           <input
             v-model="numA"
-            type="number"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
             placeholder="如 3"
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
                    focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
@@ -81,7 +85,9 @@ function startDivination() {
           <label class="text-xs text-gray-500 mb-1 block">数字二</label>
           <input
             v-model="numB"
-            type="number"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
             placeholder="如 8"
             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
                    focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"

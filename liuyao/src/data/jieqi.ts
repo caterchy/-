@@ -237,6 +237,38 @@ export function getCurrentSolarTerm(date: Date): SolarTerm | null {
 /**
  * 获取指定日期距离当前节气已过天数
  */
+/**
+ * 获取指定日期之后的第一个节气
+ * 返回下一个节气的名称、日期和剩余天数
+ * 跨年边界时自动查找下一年
+ */
+export function getNextJieQi(date: Date): { name: string; date: Date; daysUntil: number } | null {
+  const year = date.getFullYear()
+  const terms = getSolarTermDates(year)
+  const nextYearTerms = getSolarTermDates(year + 1)
+  const allTerms = [...terms, ...nextYearTerms]
+
+  const dateTime = date.getTime()
+
+  for (const term of allTerms) {
+    const termDate = new Date(term.year, term.month - 1, term.day, term.hour, term.minute)
+    if (termDate.getTime() > dateTime) {
+      const diffMs = termDate.getTime() - dateTime
+      const daysUntil = Math.round(diffMs / (1000 * 60 * 60 * 24))
+      return {
+        name: term.name,
+        date: termDate,
+        daysUntil,
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * 获取指定日期距离当前节气已过天数
+ */
 export function getDaysSinceSolarTerm(date: Date): number {
   const term = getCurrentSolarTerm(date)
   if (!term) return 0

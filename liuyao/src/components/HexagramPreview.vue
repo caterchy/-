@@ -12,44 +12,65 @@ const POSITION_LABELS = ['初', '二', '三', '四', '五', '上']
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
     <h3 class="text-sm font-bold text-gray-700 mb-3">排盘预览</h3>
 
-    <!-- Original hexagram -->
-    <div class="bg-[#faf5eb] rounded-lg p-4 border border-[#d4c5a9]/40">
-      <div class="flex flex-col items-center gap-1">
-        <div
-          v-for="(yao, i) in [...result.original.yaos].reverse()"
-          :key="i"
-          class="flex items-center gap-2 py-0.5 px-2"
-          :class="yao.yao.changing ? 'bg-amber-50/60 rounded' : ''"
-        >
-          <!-- Position label -->
-          <span class="w-8 text-xs text-gray-400 shrink-0 text-right">{{ POSITION_LABELS[result.original.yaos.length - 1 - i] }}爻</span>
+    <div class="grid grid-cols-2 gap-3">
+      <!-- Left column: 本卦 -->
+      <div class="bg-[#faf5eb] rounded-lg p-4 border border-[#d4c5a9]/40">
+        <div class="text-center text-sm font-bold text-gray-700 mb-2">
+          {{ result.original.name }}
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <div
+            v-for="(yao, i) in [...result.original.yaos].reverse()"
+            :key="i"
+            class="flex items-center justify-between py-0.5 px-2"
+            :class="yao.yao.changing ? 'bg-amber-50/60 rounded' : ''"
+          >
+            <div class="flex items-center gap-2">
+              <!-- Position label -->
+              <span class="w-8 text-xs text-gray-400 shrink-0 text-right">{{ POSITION_LABELS[result.original.yaos.length - 1 - i] }}爻</span>
 
-          <!-- Horizontal line -->
-          <span class="font-mono text-base" style="color: #333;">
-            {{ yao.yao.yang ? '━━━━━' : '━ ━━' }}
-          </span>
-
-          <!-- Changing marker -->
-          <span v-if="yao.yao.changing" class="text-[#c00] font-bold text-sm shrink-0">{{ yao.yao.yang ? '○' : '×' }}</span>
-
-          <!-- Najia -->
-          <span class="text-xs text-gray-400 shrink-0">{{ yao.najia.gan }}{{ yao.najia.zhi }}</span>
+              <!-- Horizontal line -->
+              <span class="font-mono text-lg shrink-0" style="color: #333; letter-spacing: 0.1em;">
+                {{ yao.yao.yang ? '⚊' : '⚋' }}
+              </span>
+            </div>
+            <div class="w-6 text-center">
+              <!-- Changing marker -->
+              <span v-if="yao.yao.changing" class="text-[#c00] font-bold text-sm">{{ yao.yao.yang ? '○' : '×' }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Hexagram name -->
-      <div class="text-center mt-3">
-        <span class="text-sm font-bold text-gray-700">{{ result.original.name }}</span>
-        <span class="text-xs text-gray-400 ml-2">({{ result.original.index }})</span>
-      </div>
-    </div>
+      <!-- Right column: 变卦 -->
+      <div v-if="result.changed" class="bg-[#f0faf5] rounded-lg p-4 border border-[#a9d4c5]/40">
+        <div class="text-center text-sm font-bold text-green-700 mb-2">
+          {{ result.changed.name }}
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <div
+            v-for="(yao, i) in [...result.changed.yaos].reverse()"
+            :key="i"
+            class="flex items-center justify-between py-0.5 px-2"
+          >
+            <div class="flex items-center gap-2">
+              <!-- Position label -->
+              <span class="w-8 text-xs text-gray-400 shrink-0 text-right">{{ POSITION_LABELS[result.changed.yaos.length - 1 - i] }}爻</span>
 
-    <!-- Changed hexagram -->
-    <div v-if="result.changed" class="mt-3 text-center text-sm text-gray-500">
-      <span class="text-gray-300">→</span>
-      变卦：
-      <span class="font-bold text-gray-700">{{ result.changed.name }}</span>
-      <span class="text-xs text-gray-400">({{ result.changed.index }})</span>
+              <!-- Horizontal line -->
+              <span class="font-mono text-lg shrink-0" style="color: #333; letter-spacing: 0.1em;">
+                {{ yao.yao.yang ? '⚊' : '⚋' }}
+              </span>
+            </div>
+            <div class="w-6 text-center"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No changed hexagram message -->
+      <div v-else class="bg-gray-50 rounded-lg p-4 border border-gray-200 flex items-center justify-center">
+        <span class="text-sm text-gray-400">静卦 — 无变卦</span>
+      </div>
     </div>
 
     <!-- Time info -->

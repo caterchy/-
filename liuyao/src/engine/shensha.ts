@@ -31,6 +31,8 @@ export function calcShenSha(
 
       if (type === '天乙贵人') {
         zhisToMatch = getGuiRenZhi(riGan)
+      } else if (type === '禄神' || type === '羊刃' || type === '文昌') {
+        zhisToMatch = getShenShaZhi(type, riGan as unknown as DiZhi)
       } else {
         zhisToMatch = getShenShaZhi(type, riZhi)
       }
@@ -59,6 +61,8 @@ export function getShenShaForYao(
 
     if (type === '天乙贵人') {
       zhisToMatch = getGuiRenZhi(riGan)
+    } else if (type === '禄神' || type === '羊刃' || type === '文昌') {
+      zhisToMatch = getShenShaZhi(type, riGan as unknown as DiZhi)
     } else {
       zhisToMatch = getShenShaZhi(type, riZhi)
     }

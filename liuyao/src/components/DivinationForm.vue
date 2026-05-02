@@ -43,42 +43,52 @@ const activeTab = ref<DivinationMethod>('coin')
 const isLoading = ref(false)
 
 // --- Hexagram form ---
-const hexSearch = ref('')
 const selectedHexagram = ref<string | null>(null)
-const changedHexSearch = ref('')
-const selectedChangedHexagram = ref<string | null>(null)
 const dongYaos = ref<number[]>([])
-const filteredHexagrams = computed(() => {
-  if (!hexSearch.value.trim()) return ALL_HEXAGRAMS
-  const q = hexSearch.value.trim()
-  return ALL_HEXAGRAMS.filter(h => h.name.includes(q) || h.code.includes(q))
+const changedHexagramCode = ref<string>('')
+
+/** 变卦: computed from 动爻 */
+const autoChangedHexagram = computed(() => {
+  if (!selectedHexagram.value || dongYaos.value.length === 0) return null
+  const code = selectedHexagram.value.split('').map((c, i) => {
+    return dongYaos.value.includes(i) ? (c === '1' ? '0' : '1') : c
+  }).join('')
+  return ALL_HEXAGRAMS.find(h => h.code === code) ?? null
 })
-const filteredChangedHexagrams = computed(() => {
-  if (!changedHexSearch.value.trim()) return ALL_HEXAGRAMS
-  const q = changedHexSearch.value.trim()
-  return ALL_HEXAGRAMS.filter(h => h.name.includes(q) || h.code.includes(q))
-})
+
 const selectedHexName = computed(() => {
   if (!selectedHexagram.value) return ''
   return ALL_HEXAGRAMS.find(h => h.code === selectedHexagram.value)?.name ?? ''
 })
-const selectedChangedHexName = computed(() => {
-  if (!selectedChangedHexagram.value) return ''
-  return ALL_HEXAGRAMS.find(h => h.code === selectedChangedHexagram.value)?.name ?? ''
+
+/** 八宫分组 */
+const hexagramGroups = computed(() => {
+  const groups: { palace: string; items: typeof ALL_HEXAGRAMS }[] = []
+  const palaceOrder = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤']
+  for (const p of palaceOrder) {
+    const items = ALL_HEXAGRAMS.filter(h => h.palace === p)
+    if (items.length > 0) groups.push({ palace: p, items })
+  }
+  return groups
 })
 
-function syncMovingFromHexagrams() {
-  if (!selectedHexagram.value || !selectedChangedHexagram.value) return
-  const origCode = selectedHexagram.value
-  const changedCode = selectedChangedHexagram.value
-  dongYaos.value = []
-  for (let i = 0; i < 6; i++) {
-    if (origCode[i] !== changedCode[i]) {
-      dongYaos.value.push(i)
-    }
+/** Sync the changedHexagramCode dropdown to match current dongYaos */
+function syncChangedHexagramCode() {
+  if (!selectedHexagram.value) {
+    changedHexagramCode.value = ''
+    return
   }
+  if (dongYaos.value.length === 0) {
+    changedHexagramCode.value = ''
+    return
+  }
+  const code = selectedHexagram.value.split('').map((c, i) => {
+    return dongYaos.value.includes(i) ? (c === '1' ? '0' : '1') : c
+  }).join('')
+  changedHexagramCode.value = code
 }
 
+/** 切换动爻时自动计算变卦 */
 function toggleDongYao(pos: number) {
   const idx = dongYaos.value.indexOf(pos)
   if (idx === -1) {
@@ -86,6 +96,39 @@ function toggleDongYao(pos: number) {
   } else {
     dongYaos.value.splice(idx, 1)
   }
+  syncChangedHexagramCode()
+}
+
+/** Set 动爻 array (for 静卦 button) */
+function setDongYaos(yaos: number[]) {
+  dongYaos.value = yaos
+  syncChangedHexagramCode()
+}
+
+/** 变卦 dropdown selection: compute 动爻 from bit differences */
+function selectChangedHexagram(code: string) {
+  changedHexagramCode.value = code
+  if (!selectedHexagram.value) {
+    dongYaos.value = []
+    return
+  }
+  if (!code || code === selectedHexagram.value) {
+    dongYaos.value = []
+    return
+  }
+  const newDongYaos: number[] = []
+  for (let i = 0; i < 6; i++) {
+    if (selectedHexagram.value[i] !== code[i]) {
+      newDongYaos.push(i)
+    }
+  }
+  dongYaos.value = newDongYaos
+}
+
+function setHexagram(code: string) {
+  selectedHexagram.value = code
+  dongYaos.value = []
+  changedHexagramCode.value = ''
 }
 
 // --- Methods ---
@@ -229,56 +272,24 @@ const canSubmitHexagram = computed(() => !!selectedHexagram.value)
       <div v-else-if="activeTab === 'hexagram'" class="space-y-4">
         <div>
           <label class="text-xs text-gray-500 mb-1 block">本卦</label>
-          <input
-            v-model="hexSearch"
-            type="text"
-            placeholder="搜索卦名或卦序..."
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2
-                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-          />
-          <div class="max-h-40 overflow-y-auto border border-gray-100 rounded-lg bg-white">
-            <button
-              v-for="h in filteredHexagrams"
-              :key="h.code"
-              @click="selectedHexagram = h.code; hexSearch = h.name; syncMovingFromHexagrams()"
-              class="w-full text-left px-3 py-1.5 text-sm transition-colors"
-              :class="selectedHexagram === h.code
-                ? 'bg-[#8b0000]/10 text-[#8b0000] font-bold'
-                : 'text-gray-600 hover:bg-gray-50'"
-            >
-              {{ h.name }}
-              <span class="text-gray-300 text-xs ml-1">({{ h.code }})</span>
-            </button>
-          </div>
+          <select
+            v-model="selectedHexagram"
+            @change="setHexagram(($event.target as HTMLSelectElement).value)"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30 bg-white"
+          >
+            <option value="" disabled>请选择卦象</option>
+            <optgroup v-for="group in hexagramGroups" :key="group.palace" :label="`${group.palace}宫`">
+              <option v-for="h in group.items" :key="h.code" :value="h.code">
+                {{ h.name }}
+              </option>
+            </optgroup>
+          </select>
         </div>
 
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">变卦（可选）</label>
-          <input
-            v-model="changedHexSearch"
-            type="text"
-            placeholder="搜索变卦..."
-            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2
-                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30"
-          />
-          <div class="max-h-40 overflow-y-auto border border-gray-100 rounded-lg bg-white">
-            <button
-              v-for="h in filteredChangedHexagrams"
-              :key="h.code"
-              @click="selectedChangedHexagram = h.code; changedHexSearch = h.name; syncMovingFromHexagrams()"
-              class="w-full text-left px-3 py-1.5 text-sm transition-colors"
-              :class="selectedChangedHexagram === h.code
-                ? 'bg-[#8b0000]/10 text-[#8b0000] font-bold'
-                : 'text-gray-600 hover:bg-gray-50'"
-            >
-              {{ h.name }}
-              <span class="text-gray-300 text-xs ml-1">({{ h.code }})</span>
-            </button>
-          </div>
-        </div>
-
+        <!-- 动爻选择 + 自动变卦 -->
         <div v-if="selectedHexagram">
-          <label class="text-xs text-gray-500 mb-1 block">动爻（可多选）</label>
+          <label class="text-xs text-gray-500 mb-1 block">动爻（可多选）— 变卦自动计算</label>
           <div class="flex gap-2 flex-wrap">
             <label
               v-for="i in 6"
@@ -297,13 +308,37 @@ const canSubmitHexagram = computed(() => !!selectedHexagram.value)
               {{ ['初','二','三','四','五','上'][i - 1] }}
             </label>
             <button
-              @click="dongYaos = []"
+              @click="setDongYaos([])"
               class="px-3 py-2 rounded-lg border text-sm transition-all text-gray-400 hover:border-gray-300"
               :class="dongYaos.length === 0 ? 'bg-gray-100 border-gray-300 text-gray-600 font-bold' : ''"
             >
               静卦
             </button>
           </div>
+        </div>
+
+        <!-- 变卦 dropdown (reverse selection) -->
+        <div v-if="selectedHexagram">
+          <label class="text-xs text-gray-500 mb-1 block">变卦（可选）</label>
+          <select
+            :value="changedHexagramCode"
+            @change="selectChangedHexagram(($event.target as HTMLSelectElement).value)"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#8b0000]/30 bg-white"
+          >
+            <option value="">无变卦（静卦）</option>
+            <optgroup v-for="group in hexagramGroups" :key="group.palace" :label="`${group.palace}宫`">
+              <option v-for="h in group.items" :key="h.code" :value="h.code">
+                {{ h.name }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- 变卦自动显示 -->
+        <div v-if="autoChangedHexagram" class="text-sm px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+          <span class="text-gray-500">变卦：</span>
+          <span class="font-bold text-green-700">{{ autoChangedHexagram.name }}</span>
         </div>
 
         <button
@@ -313,7 +348,7 @@ const canSubmitHexagram = computed(() => !!selectedHexagram.value)
                  hover:bg-red-900 disabled:opacity-40 disabled:cursor-not-allowed
                  active:scale-[0.98] transition-all duration-200 shadow-sm"
         >
-          <span v-if="selectedHexagram && dongYaos.length > 0">以【{{ selectedHexName }}】变【{{ selectedChangedHexName || '...' }}】起卦</span>
+          <span v-if="selectedHexagram && dongYaos.length > 0">以【{{ selectedHexName }}】变【{{ autoChangedHexagram?.name || '...' }}】起卦</span>
           <span v-else-if="selectedHexagram">以【{{ selectedHexName }}】（静卦）起卦</span>
           <span v-else>请先选择卦象</span>
         </button>

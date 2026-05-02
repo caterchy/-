@@ -121,7 +121,7 @@ export function getXun(gan: TianGan, zhi: DiZhi): string | null {
   const baseIdx = zhiIdx - (ganIdx % 10)
   const xunBase = baseIdx >= 0 ? baseIdx : baseIdx + 12
   const xunZhi = DI_ZHI[xunBase]
-  const key = `${TIAN_GAN[ganIdx]}${xunZhi}`
+  const key = `甲${xunZhi}`
   return key in XUN_KONG ? key : null
 }
 

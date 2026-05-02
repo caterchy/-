@@ -9,12 +9,32 @@ const LIU_CHONG: Record<string, string> = {
 
 /**
  * 检测暗动/月破/日破
- * 规则：
+ *
+ * 本卦规则：
  *   月冲 → 月破
  *   日冲+旺相(旺/相) → 暗动
  *   日冲+休囚(休/囚/死) → 日破
+ *
+ * 变卦规则（isChanged=true）：
+ *   变卦不出暗动，改为检测日破（六冲日辰）
+ *
+ * @param yaos 爻位列表（会被原地修改）
+ * @param bazi 八字
+ * @param isChanged 是否为变卦（变卦不出暗动）
  */
-export function detectAnDong(yaos: YaoDetail[], bazi: BaZi): void {
+export function detectAnDong(yaos: YaoDetail[], bazi: BaZi, isChanged: boolean = false): void {
+  if (isChanged) {
+    // 变卦：不标记任何状态（暗动、日破等均不适用）
+    for (const yao of yaos) {
+      yao.isAnDong = undefined
+      yao.anDongReason = undefined
+      yao.isRiPo = undefined
+      yao.riPoReason = undefined
+    }
+    return
+  }
+
+  // 本卦：原有暗动/月破/日破逻辑
   const monthZhi = bazi.yue.zhi
   const dayZhi = bazi.ri.zhi
 

@@ -57,7 +57,7 @@ const detailOpen = ref(false)
           <!-- 伏神标注 -->
           <div v-if="y.fushen" class="text-xs text-center" style="font-size: 0.85em; margin-top: 2px;">
             <span style="color: #999;">↑</span>
-            <span style="color: #999;"> 伏神：{{ y.fushen.liuqin }}{{ y.fushen.zhi }}{{ y.fushen.wuxing }}</span>
+            <span style="color: #999;"> 伏神：{{ y.fushen.liuqin }}{{ y.fushen.gan }}{{ y.fushen.zhi }}{{ y.fushen.wuxing }}</span>
           </div>
         </template>
       </div>

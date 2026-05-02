@@ -13,10 +13,10 @@ interface YaoSelection {
 }
 
 const OPTIONS: YaoSelection[] = [
-  { yang: true, changing: false, label: '少阳 ⚊' },
-  { yang: true, changing: true, label: '老阳 ⚊○' },
-  { yang: false, changing: false, label: '少阴 ⚋' },
-  { yang: false, changing: true, label: '老阴 ⚋×' },
+  { yang: true, changing: false, label: '少阳 (⚊) 二正一反' },
+  { yang: true, changing: true, label: '老阳 (⚊○) 三正' },
+  { yang: false, changing: false, label: '少阴 (⚋) 一正两背' },
+  { yang: false, changing: true, label: '老阴 (⚋×) 三背' },
 ]
 
 const POSITION_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻']
@@ -73,24 +73,20 @@ function submit() {
   <div class="bg-white rounded shadow-sm border p-6" style="border-color: var(--border-color);">
     <h3 class="text-lg font-bold text-center text-[#8b0000] mb-4">手工指定六爻</h3>
 
-    <!-- 正背对应说明 -->
-    <div class="text-xs text-gray-500 mb-4 text-center space-y-0.5 bg-gray-50 rounded py-2 px-3" style="border-radius: var(--radius);">
-      <p>硬币选择：字为<strong>正面（阳）</strong>，花/满文为<strong>反面（阴）</strong></p>
-      <p>三正面=老阳(动)、二正一反=少阳、一正二反=少阴、三反面=老阴(动)</p>
-    </div>
-
     <!-- 已选结果预览：horizontal lines bottom-to-top -->
     <div class="hexagram-center mb-6">
       <div class="flex flex-col items-center gap-1">
         <div
           v-for="(sel, i) in [...selections].reverse()"
           :key="i"
-          class="flex items-center gap-2"
+          class="flex items-center justify-between w-full max-w-[220px] mx-auto"
         >
-          <span class="text-xs text-gray-400 w-4 text-right">{{ POSITION_NAMES[selections.length - 1 - i] }}</span>
-          <span class="font-mono text-base" style="color: #333;">
-            {{ OPTIONS[sel].yang ? '━━━━━' : '━ ━━' }}
-          </span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-400 w-4 text-right">{{ POSITION_NAMES[selections.length - 1 - i] }}</span>
+            <span class="font-mono text-lg shrink-0" style="color: #333; letter-spacing: 0.1em;">
+              {{ OPTIONS[sel].yang ? '⚊' : '⚋' }}
+            </span>
+          </div>
           <span v-if="OPTIONS[sel].changing" class="text-[#c00] font-bold text-sm">{{ OPTIONS[sel].yang ? '○' : '×' }}</span>
         </div>
       </div>

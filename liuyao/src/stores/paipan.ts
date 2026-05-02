@@ -16,6 +16,7 @@ export const usePaipanStore = defineStore('paipan', () => {
     showKongwang: true,
     showFuShen: true,
     showWangShuai: true,
+    showAnDong: true,
   })
 
   /** 加载历史记录 */

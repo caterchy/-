@@ -34,6 +34,8 @@ export type WangShuai = '旺' | '相' | '休' | '囚' | '死'
 export interface FuShen {
   /** 伏神六亲 */
   liuqin: LiuQin
+  /** 伏神天干 */
+  gan: TianGan
   /** 伏神地支 */
   zhi: DiZhi
   /** 伏神五行 */
@@ -86,6 +88,10 @@ export interface YaoDetail {
   isAnDong?: boolean
   /** 暗动原因 */
   anDongReason?: '月冲' | '日冲' | '月破' | '日破'
+  /** 是否日破（变卦专用，六冲日辰） */
+  isRiPo?: boolean
+  /** 日破原因 */
+  riPoReason?: string
 }
 
 /** 四柱中的一柱 */
@@ -137,16 +143,22 @@ export interface GuaDetail {
   yaoxiang?: string[]
 }
 
-/** 三合局 */
-export interface SanHe {
-  /** 三合局名称 */
+/** 三合局结果 */
+export interface SanHeResult {
+  /** 三合局名称，如"申子辰合水局" */
   name: string
   /** 五行 */
   wuxing: WuXing
-  /** 参与的地支 */
-  zhis: [DiZhi, DiZhi, DiZhi]
-  /** 参与的爻位 */
-  positions: number[]
+  /** 是否已形成完整三合局 */
+  completed: boolean
+  /** 三合局的三个地支 */
+  zhis: DiZhi[]
+  /** 已匹配到的地支 */
+  matchedZhis: DiZhi[]
+  /** 缺失的地支（未完成时） */
+  missingZhis: DiZhi[]
+  /** 来源明细 */
+  sources: { zhi: DiZhi; source: string }[]
 }
 
 /** 反吟伏吟 */
@@ -204,8 +216,8 @@ export interface PaipanResult {
   changed?: GuaDetail
   /** 空亡 */
   kongwang: KongWang
-  /** 三合局（可选） */
-  sanhe?: SanHe
+  /** 三合局（可选，含完整局和未完成局） */
+  sanhe?: SanHeResult[]
   /** 反吟伏吟（可选） */
   fanyin?: FanYinFuYin
   /** 起卦方式（可选，向后兼容旧数据） */
@@ -223,4 +235,5 @@ export interface DisplayOptions {
   showKongwang: boolean
   showFuShen: boolean
   showWangShuai: boolean
+  showAnDong: boolean
 }

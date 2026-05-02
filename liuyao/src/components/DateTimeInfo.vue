@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { BaZi, KongWang, BaGua, ShenShaType } from '../types'
-import { formatBaZi } from '../engine/bazi'
 import { calcTimeShenSha } from '../engine/shensha'
 import type { TimeShenSha } from '../engine/shensha'
-import { getCurrentSolarTerm, getDaysSinceSolarTerm } from '../data/jieqi'
+import { getCurrentSolarTerm, getDaysSinceSolarTerm, getNextJieQi } from '../data/jieqi'
 
 const props = defineProps<{
   bazi: BaZi
@@ -74,6 +73,12 @@ if (currentTerm) {
   jieqiText = '—'
 }
 
+const nextJieQi = getNextJieQi(props.timestamp)
+
+function formatTermDate(date: Date): string {
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
+
 
 // ---- 神煞计算 ----
 const hexagramInfo = computed(() => {
@@ -126,6 +131,7 @@ function getShenshaDisplayName(name: ShenShaType): string {
       <!-- 第一行：起卦时间 -->
       <div class="grid grid-cols-2 gap-3 text-sm">
         <div>
+          <!-- 左列: 起卦时间 -->
           <span class="text-gray-500">起卦时间:</span>
           <template v-if="!readonly">
             <button @click="toggleEdit" class="ml-2 font-medium hover:text-[#8b0000] transition-colors cursor-pointer" :title="isEditing ? '保存' : '修改'">
@@ -143,66 +149,43 @@ function getShenshaDisplayName(name: ShenShaType): string {
           </template>
           <span v-else class="ml-2 font-medium">{{ formatTime(timestamp) }}</span>
         </div>
-        <div>
-          <span class="text-gray-500">节气:</span>
-          <span class="ml-2 text-green-700 font-medium">{{ jieqiText }}</span>
-          <span v-if="currentTerm && daysSinceTerm > 0" class="ml-1 text-xs text-gray-400">
-            (已过 {{ daysSinceTerm }} 天)
-          </span>
-        </div>
-      </div>
-
-      <!-- 第二组：四柱八字 -->
-      <div class="border-t pt-3 space-y-2" :style="{ borderColor: 'var(--border-color)' }">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">四柱</span>
-          <span class="flex-1 h-px" :style="{ background: 'var(--border-color)' }"></span>
-        </div>
-        <div>
-          <span class="text-gray-500">八字:</span>
-          <span class="ml-2 font-mono font-bold text-[#8b0000] text-lg">{{ formatBaZi(bazi) }}</span>
-        </div>
-
-        <!-- 旬空/卦身/世身 - 独立显示，在八字下方 -->
-        <div class="flex flex-wrap gap-4 text-sm">
-          <div class="bg-red-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
-            <span class="text-gray-500 text-xs">旬空</span>
-            <span class="ml-1 font-bold text-red-600">{{ kongwangText }}</span>
+        <div class="text-right">
+          <!-- 右列: 节气 + 下一个节气 -->
+          <div>
+            <span class="text-gray-500">节气:</span>
+            <span class="ml-2 text-green-700 font-medium">{{ jieqiText }}</span>
+            <span v-if="currentTerm && daysSinceTerm > 0" class="ml-1 text-xs text-gray-400">
+              (已过 {{ daysSinceTerm }} 天)
+            </span>
           </div>
-          <div class="bg-blue-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
-            <span class="text-gray-500 text-xs">卦身</span>
-            <span class="ml-1 font-bold text-blue-600">{{ guaShenText }}</span>
-          </div>
-          <div class="bg-purple-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
-            <span class="text-gray-500 text-xs">世身</span>
-            <span class="ml-1 font-bold text-purple-600">{{ shiShenText }}</span>
+          <div v-if="nextJieQi" class="mt-1">
+            <span class="text-gray-500">下一个节气：</span>
+            <span class="text-green-700 font-medium">{{ nextJieQi.name }} {{ formatTermDate(nextJieQi.date) }}</span>
+            <span class="ml-1 text-xs text-gray-400">（还有 {{ nextJieQi.daysUntil }} 天）</span>
           </div>
         </div>
       </div>
-
-      <!-- 第三组：月建日辰 -->
-      <div class="border-t pt-3 space-y-2" :style="{ borderColor: 'var(--border-color)' }">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">月日</span>
-          <span class="flex-1 h-px" :style="{ background: 'var(--border-color)' }"></span>
-        </div>
-        <div class="flex flex-wrap gap-4 text-sm">
-          <div class="bg-orange-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
-            <span class="text-gray-500 text-xs">月建</span>
-            <span class="ml-1 font-bold text-orange-700 text-lg">{{ bazi.yue.zhi }}</span>
-            <span class="text-gray-400 text-xs">({{ bazi.yue.gan }}{{ bazi.yue.zhi }} {{ bazi.yue.wuxing }})</span>
-          </div>
-          <div class="bg-orange-50 border rounded px-3 py-1.5" style="border-color: var(--border-color);">
-            <span class="text-gray-500 text-xs">日辰</span>
-            <span class="ml-1 font-bold text-orange-700 text-lg">{{ bazi.ri.zhi }}</span>
-            <span class="text-gray-400 text-xs">({{ bazi.ri.gan }}{{ bazi.ri.zhi }} {{ bazi.ri.wuxing }})</span>
-          </div>
-        </div>
+      <!-- 第二行: 干支 (full-width) -->
+      <div class="text-sm">
+        <span class="text-gray-500">干支：</span>
+        <span class="ml-2 font-medium">{{ bazi.nian.gan }}{{ bazi.nian.zhi }}年
+          {{ bazi.yue.gan }}{{ bazi.yue.zhi }}月
+          {{ bazi.ri.gan }}{{ bazi.ri.zhi }}日
+          {{ bazi.shi.gan }}{{ bazi.shi.zhi }}时</span>
       </div>
 
-      <!-- 第四组：神煞（可折叠） -->
+      <!-- 旬空/卦身/世身 -->
       <div class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
-        <!-- 折叠切换 - text link style -->
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <span><span class="text-gray-500">旬空：</span><span class="font-bold text-red-600">{{ kongwangText }}</span></span>
+          <span><span class="text-gray-500">卦身：</span><span class="font-bold text-blue-600">{{ guaShenText }}</span></span>
+          <span><span class="text-gray-500">世身：</span><span class="font-bold text-purple-600">{{ shiShenText }}</span></span>
+        </div>
+      </div>
+
+      <!-- 第三组：神煞（可折叠） -->
+      <div class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
+        <!-- 折叠切换 -->
         <button
           @click="shenshaExpanded = !shenshaExpanded"
           class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
@@ -212,18 +195,19 @@ function getShenshaDisplayName(name: ShenShaType): string {
           <span v-else>收起 神煞</span>
         </button>
 
-        <!-- 展开列表 -->
-        <div v-if="shenshaExpanded && collapsibleShensha.length > 0" class="mt-1 space-y-0.5">
-          <div
-            v-for="s in collapsibleShensha"
-            :key="s.name"
-            class="text-xs px-2 py-0.5"
-            style="color: #666;"
-          >
-            {{ getShenshaDisplayName(s.name) }} — {{ s.value }}
-          </div>
+        <!-- 3列网格（收起时显示前3个，展开时显示全部） -->
+        <div v-if="collapsibleShensha.length > 0" class="mt-2 grid grid-cols-3 gap-x-3 gap-y-1">
+          <template v-for="s in collapsibleShensha" :key="s.name">
+            <div v-if="shenshaExpanded || collapsibleShensha.indexOf(s) < 3" class="text-sm px-2 py-0.5" style="color: #666;">
+              <span class="text-gray-500">{{ getShenshaDisplayName(s.name) }}：</span>
+              <span>{{ s.value }}</span>
+            </div>
+          </template>
         </div>
-        <div v-if="shenshaExpanded && collapsibleShensha.length === 0" class="mt-1 text-xs text-gray-400">
+        <div v-if="!shenshaExpanded && collapsibleShensha.length > 3" class="mt-1 text-sm text-gray-400">
+          ...
+        </div>
+        <div v-if="collapsibleShensha.length === 0" class="mt-1 text-sm text-gray-400">
           无
         </div>
       </div>

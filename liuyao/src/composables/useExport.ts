@@ -86,12 +86,19 @@ export function formatResultText(result: PaipanResult): string {
     )
   }
 
-  if (result.sanhe) {
-    lines.push(
-      `三合局: ${result.sanhe.name} ${result.sanhe.wuxing}局`,
-      `参与爻位: ${result.sanhe.positions.join(', ')}爻`,
-      '',
-    )
+  if (result.sanhe && result.sanhe.length > 0) {
+    for (const sh of result.sanhe) {
+      if (sh.completed) {
+        lines.push(`三合局: ${sh.name}（已形成）`)
+      } else {
+        lines.push(`三合局: ${sh.name}（缺${sh.missingZhis.join('、')}）`)
+      }
+      if (sh.sources.length > 0) {
+        const srcText = sh.sources.map(s => `${s.zhi}(${s.source})`).join(', ')
+        lines.push(`  来源: ${srcText}`)
+      }
+    }
+    lines.push('')
   }
 
   if (result.fanyin) {

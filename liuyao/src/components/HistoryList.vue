@@ -42,9 +42,9 @@ function formatTime(date: Date): string {
     >
       <div class="flex-1 cursor-pointer" @click="emit('view', item.id)">
         <div class="flex items-center gap-2">
-          <span class="font-bold text-[#8b0000]">{{ item.original.name }}({{ item.original.index }}) {{ item.original.gong }}宫</span>
+          <span class="font-bold text-[#8b0000]">{{ item.original.name }} {{ item.original.gong }}宫</span>
           <span v-if="item.changed" class="text-sm text-gray-500">
-            → {{ item.changed.name }}({{ item.changed.index }}) {{ item.changed.gong }}宫
+            → {{ item.changed.name }} {{ item.changed.gong }}宫
           </span>
         </div>
         <div class="text-xs text-gray-500 mt-1">

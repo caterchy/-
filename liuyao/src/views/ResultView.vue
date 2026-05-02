@@ -154,10 +154,20 @@ function downloadJson() {
     <!-- 第4模块：可选信息 -->
     <div class="space-y-3">
       <!-- 三合局 -->
-      <div v-if="displayOptions.showSanhe && result.sanhe" class="card px-3 py-2 text-sm">
-        <span class="font-bold text-gray-700">三合局:</span>
-        <span class="ml-2">{{ result.sanhe.name }} {{ result.sanhe.wuxing }}局</span>
-        <span class="ml-2 text-gray-500">（{{ result.sanhe.positions.join('、') }}爻）</span>
+      <div v-if="displayOptions.showSanhe && result.sanhe && result.sanhe.length > 0" class="card px-3 py-2 text-sm space-y-1">
+        <div class="font-bold text-gray-700 mb-1">三合局:</div>
+        <div v-for="(sh, si) in result.sanhe" :key="si" class="pl-2 border-l-2" :class="sh.completed ? 'border-green-400' : 'border-gray-300'">
+          <span :class="{ 'text-green-700 font-bold': sh.completed, 'text-gray-500': !sh.completed }">
+            {{ sh.name }}
+            <span v-if="sh.completed" class="text-green-600">（已形成）</span>
+            <span v-else class="text-gray-400">（缺{{ sh.missingZhis.join('、') }}）</span>
+          </span>
+          <div v-if="sh.sources.length > 0" class="text-xs text-gray-400 mt-0.5">
+            <span v-for="(src, si2) in sh.sources" :key="si2">
+              {{ src.zhi }}:{{ src.source }}<span v-if="si2 < sh.sources.length - 1">，</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- 反吟伏吟 -->

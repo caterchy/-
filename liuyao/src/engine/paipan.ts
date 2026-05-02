@@ -159,8 +159,8 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
       }
 
 
-      // 暗动
-      detectAnDong(changedYaosDetail, bazi)
+      // 变卦不出暗动，改为日破检测
+      detectAnDong(changedYaosDetail, bazi, true)
 
       changed = {
         name: changedInfo.name,
@@ -182,8 +182,8 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
     }
   }
 
-  // 10. 三合局
-  const sanhe = detectSanHe(allZhis)
+  // 10. 三合局（含完整局和未完成局）
+  const sanheResults = detectSanHe(originalYaos, bazi, { shiIndex: shi, yingIndex: ying })
 
   // 11. 反吟伏吟
   let fanyin = null
@@ -198,7 +198,7 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
     original,
     changed: changed || undefined,
     kongwang: kongwang || { xun: '', zhi1: '戌', zhi2: '亥' },
-    sanhe: sanhe || undefined,
+    sanhe: sanheResults.length > 0 ? sanheResults : undefined,
     fanyin: fanyin || undefined,
   }
 
