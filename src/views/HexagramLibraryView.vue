@@ -113,7 +113,7 @@ function goBack() {
     <!-- 头部 -->
     <div class="flex items-center justify-between">
       <button @click="goBack" class="text-gray-500 hover:text-gray-700 text-sm">&larr; 返回</button>
-      <h2 class="text-lg font-bold text-gray-700">六十四卦象库</h2>
+      <h2 class="text-lg font-bold text-gray-700">卦库</h2>
       <div class="w-12"></div>
     </div>
 

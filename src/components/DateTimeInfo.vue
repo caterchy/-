@@ -131,7 +131,7 @@ const visibleShensha = computed(() => {
     <div class="space-y-3">
       <!-- 第一行：起卦时间 -->
       <div class="text-sm">
-        <span class="text-gray-500">起卦时间:</span>
+        <span class="text-gray-500">起卦时间：</span>
         <template v-if="!readonly">
           <button @click="toggleEdit" class="ml-2 font-medium hover:text-[#8b0000] transition-colors cursor-pointer" :title="isEditing ? '保存' : '修改'">
             {{ isEditing ? '✏️' : '' }}
@@ -159,7 +159,7 @@ const visibleShensha = computed(() => {
       <!-- 第三行：节气 -->
       <div class="text-sm flex flex-wrap gap-x-3">
         <div v-if="currentTerm">
-          <span class="text-gray-500">节气:</span>
+          <span class="text-gray-500">节气：</span>
           <span class="ml-2 font-medium text-gray-700">{{ currentTerm.name }}（{{ currentTerm.month }}月{{ currentTerm.day }}日）</span>
           <span class="ml-0.5 text-xs text-gray-500">已过{{ daysSinceTerm }}天</span>
         </div>

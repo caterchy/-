@@ -13,7 +13,7 @@ interface YaoSelection {
 }
 
 const OPTIONS: YaoSelection[] = [
-  { yang: true, changing: false, label: '少阳 (⚊) 二正一反' },
+  { yang: true, changing: false, label: '少阳 (⚊) 二正一背' },
   { yang: true, changing: true, label: '老阳 (⚊○) 三正' },
   { yang: false, changing: false, label: '少阴 (⚋) 一正两背' },
   { yang: false, changing: true, label: '老阴 (⚋×) 三背' },
