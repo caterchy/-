@@ -81,6 +81,28 @@
   - 直接修复: CoinToss.vue (5处修改)、ManualInput.vue (1处)、DateTimeInfo.vue (2处)、HexagramLibraryView.vue (1处)
   - 后续计划: checklist.md 追加 O-1、O-2 两项
 
+### 2026-05-03: GitHub 提交流程 — 提交前必须更新文档和版本号
+- **决策**: 项目上线 GitHub 后，每次提交前项目经理须检查文档和版本号是否已更新，未更新不得提交
+- **原因**: 避免出现代码与文档不一致、版本号混乱的情况，确保 GitHub 仓库始终反映最新的代码状态
+- **影响**: 
+  - 修改 `agents/project_manager.md`（工作流程新增第 5 步 GitHub 发布审核）
+  - 修改 `rules/agent_hierarchy.md`（项目经理规则新增 GitHub 发布审核项）
+
+### 2026-05-03: 卦库 64 卦二进制编码方向修正
+- **决策**: `getHexagramCode` 拼接顺序从「上卦+下卦」改为「下卦+上卦」；64 个硬编码 code 全部重新生成；`parseHexagramCode` 同步交换解析顺序
+- **原因**: 原编码方向与文档注释（从下到上，阳=1阴=0）和 `yaosToCode` 输出方向不一致，导致 `findHexagramByCode(originalCode)` 在所有非对称卦上查找失败，排盘引擎全局断裂
+- **影响**: `hexagrams.ts`（函数逻辑 + 全部 64 条数据）；`hexagrams.test.ts`（4 处测试预期值同步更新）；排盘结果从此能正确匹配卦象
+
+### 2026-05-03: 变卦六亲以本卦卦宫为基准
+- **决策**: 变卦六亲从使用「变卦自身卦宫」（`changedInfo.palace`）改为使用「本卦卦宫」（`originalInfo.palace`）
+- **原因**: 传统六爻理论以本卦卦宫为"我"，变卦反映事情发展趋势但参考系不变，因此变卦六亲也应以本卦卦宫定生克关系
+- **影响**: `paipan.ts:136` 一行改动
+
+### 2026-05-03: 分享链接紧凑编码 + 解码入口补全
+- **决策**: 从 JSON.stringify 全量编码改为 12 位二进制（6 爻 yang/changing 各 6 位）+ 时间戳 + 备注的紧凑格式；`decodeResultFromUrl` 在 `ResultView.vue` 的 `onMounted` 中接入
+- **原因**: 原编码中文字符膨胀 9 倍导致 URL 过长；解码函数虽已定义但从未在 app 入口调用，分享功能完全不可用
+- **影响**: `useExport.ts`（编解码逻辑重写）；`paipan.ts`（`buildPaipanResult` 新增可选 `time` 参数）；`ResultView.vue`（新增 `onMounted` 解码入口）；兼容旧 `?result=JSON` 格式
+
 ### 2026-05-02: v1.0.0 — 部署 SPA 路由修复 + 文档重构
 - **决策**: vite.config.ts base 从 `/liuyao/` 改为 `/`，与路由器 base `/` 一致；README 重构为使用文档
 - **原因**: base 不一致导致部署后首页空白（路由不匹配初始路径），需与 `createWebHistory('/')` 对齐；README 技术架构文档对使用者无帮助，改为以使用功能为主

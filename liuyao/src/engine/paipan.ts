@@ -26,8 +26,8 @@ export function generatePaipanResult(): PaipanResult {
 /**
  * 生成排盘结果（使用给定的爻）
  */
-export function buildPaipanResult(yaos: Yao[]): PaipanResult {
-  const date = new Date()
+export function buildPaipanResult(yaos: Yao[], time?: Date): PaipanResult {
+  const date = time ?? new Date()
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 
   // 1. 起卦时间八字
@@ -133,7 +133,7 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
       const changedAllGans = [changedGanInner, changedGanInner, changedGanInner, changedGanOuter, changedGanOuter, changedGanOuter]
       const changedAllZhis = [...changedZhiInner, ...changedZhiOuter]
 
-      const changedGongWuxing: WuXing = GUA_WU_XING[changedInfo.palace]
+      const changedGongWuxing: WuXing = GUA_WU_XING[originalInfo.palace]
       const changedYaosDetail: YaoDetail[] = changedYaos.map((y, i) => {
         const wuxing = ZHI_WU_XING_NAJA[changedAllZhis[i]]
         return {

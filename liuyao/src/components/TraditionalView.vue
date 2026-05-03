@@ -70,6 +70,9 @@ function hasLiuChong(gua: GuaDetail): boolean {
       </div>
       <div v-if="changed" class="text-center font-bold text-sm" style="color: #2e7d32;">
         变卦: {{ changed.gong }}宫{{ changed.gongWuxing }} — {{ changed.name }}
+        <span v-if="hasLiuChong(changed)" class="text-orange-600"> 六冲</span>
+        <span v-if="changed.palacePos === 6" class="text-purple-600">（游魂）</span>
+        <span v-if="changed.palacePos === 7" class="text-purple-600">（归魂）</span>
       </div>
       <div v-else class="text-center text-gray-400 text-sm">
         静卦 — 无变卦
@@ -105,7 +108,7 @@ function hasLiuChong(gua: GuaDetail): boolean {
               @click.stop="toggleExpand(row.orig.position)"
               style="color: #333;"
             >
-              {{ row.orig.najia.gan }}{{ row.orig.najia.zhi }}<span class="text-gray-400">{{ row.orig.wuxing }}</span>
+              {{ row.orig.najia.gan }}{{ row.orig.najia.zhi }}<span>{{ row.orig.wuxing }}</span>
               <span v-if="displayOptions.showWangShuai && row.orig.wangshuai" class="text-xs text-gray-500 ml-0.5">{{ row.orig.wangshuai }}</span>
             </span>
 
@@ -124,7 +127,7 @@ function hasLiuChong(gua: GuaDetail): boolean {
             </span>
 
             <!-- 世应 -->
-            <span class="text-center text-xs shrink-0 ml-auto min-w-[2em]">
+            <span class="text-center text-xs shrink-0 ml-3 min-w-[2em]">
               <span v-if="row.orig.isShi" class="font-bold">世</span>
               <span v-else-if="row.orig.isYing" class="font-bold">应</span>
             </span>
@@ -152,7 +155,7 @@ function hasLiuChong(gua: GuaDetail): boolean {
               @click.stop="toggleExpand(row.changed.position + 10)"
               style="color: #333;"
             >
-              {{ row.changed.najia.gan }}{{ row.changed.najia.zhi }}<span class="text-gray-400">{{ row.changed.wuxing }}</span>
+              {{ row.changed.najia.gan }}{{ row.changed.najia.zhi }}<span class="text-sm">{{ row.changed.wuxing }}</span>
               <span v-if="displayOptions.showWangShuai && row.changed.wangshuai" class="text-xs text-gray-500 ml-0.5">{{ row.changed.wangshuai }}</span>
             </span>
 
@@ -163,12 +166,6 @@ function hasLiuChong(gua: GuaDetail): boolean {
 
             <!-- 空亡 -->
             <span v-if="displayOptions.showKongwang && row.changed.isEmpty" class="text-red-400 text-xs shrink-0">空</span>
-
-            <!-- 世应 -->
-            <span class="text-center text-xs shrink-0 ml-auto min-w-[2em]">
-              <span v-if="row.changed.isShi" class="font-bold">世</span>
-              <span v-else-if="row.changed.isYing" class="font-bold">应</span>
-            </span>
 
             <!-- 动爻标记 -->
             <span v-if="row.changed.yao.changing" class="text-[#c00] font-bold text-sm shrink-0">

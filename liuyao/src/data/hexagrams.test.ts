@@ -10,15 +10,15 @@ describe('parseHexagramCode', () => {
     expect(result.lower).toBe('乾')
   })
 
-  it('parses 地天泰: 000111', () => {
-    // 000=坤, 111=乾
-    const result = parseHexagramCode('000111')
+  it('parses 地天泰: 111000', () => {
+    // 111=乾, 000=坤
+    const result = parseHexagramCode('111000')
     expect(result.upper).toBe('坤')
     expect(result.lower).toBe('乾')
   })
 
-  it('parses 水火既济: 010101', () => {
-    const result = parseHexagramCode('010101')
+  it('parses 水火既济: 101010', () => {
+    const result = parseHexagramCode('101010')
     expect(result.upper).toBe('坎')
     expect(result.lower).toBe('离')
   })
@@ -30,11 +30,11 @@ describe('getHexagramCode', () => {
   })
 
   it('generates correct code for 天地否', () => {
-    expect(getHexagramCode('乾', '坤')).toBe('111000')
+    expect(getHexagramCode('乾', '坤')).toBe('000111')
   })
 
   it('generates correct code for 水火既济', () => {
-    expect(getHexagramCode('坎', '离')).toBe('010101')
+    expect(getHexagramCode('坎', '离')).toBe('101010')
   })
 })
 

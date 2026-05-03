@@ -23,6 +23,15 @@
         <span class="text-lg font-bold">📖</span>
         <span>卦库</span>
       </router-link>
+      <a
+        href="https://v.wjx.cn/vm/rMUYN4L.aspx"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex flex-col items-center text-sm text-gray-400 hover:text-[#8b0000] no-underline transition-colors"
+      >
+        <span class="text-lg font-bold">✉</span>
+        <span>反馈</span>
+      </a>
     </nav>
   </div>
 </template>

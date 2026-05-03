@@ -56,13 +56,13 @@ function doToss() {
     lastResultText.value = '三正（老阳）'
   } else if (headCount === 2) {
     yao = { yang: true, changing: false, type: '少阳' }
-    lastResultText.value = '二正一反（少阳）'
+    lastResultText.value = '二正一背（少阳）'
   } else if (headCount === 1) {
     yao = { yang: false, changing: false, type: '少阴' }
-    lastResultText.value = '一正二反（少阴）'
+    lastResultText.value = '一正二背（少阴）'
   } else {
     yao = { yang: false, changing: true, type: '老阴' }
-    lastResultText.value = '三反（老阴）'
+    lastResultText.value = '三背（老阴）'
   }
 
   // Staggered flip: each coin starts its animation at a different time
@@ -129,7 +129,7 @@ function reset() {
             <img :src="headsImg" alt="正面" class="coin-img" />
           </div>
           <div class="coin-back">
-            <img :src="tailsImg" alt="反面" class="coin-img" />
+            <img :src="tailsImg" alt="背面" class="coin-img" />
           </div>
         </div>
       </div>
@@ -153,7 +153,7 @@ function reset() {
         :style="{ borderRadius: 'var(--radius)' }"
       >
         <span v-if="isAnimating">摇卦中...</span>
-        <span v-else>掷 币</span>
+        <span v-else>掷币</span>
       </button>
       <button
         v-else

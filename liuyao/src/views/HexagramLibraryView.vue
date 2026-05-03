@@ -83,11 +83,11 @@ function closeDetail() {
 
 function useHexagram(hex: HexagramInfo) {
   // 将六位二进制码转为 Yao 数组（无动爻，全静卦）
-  // code[0..5] = 上卦上爻...下卦初爻 (top to bottom)
+  // code[0..5] = 下卦初爻...上卦上爻 (bottom to top)
   // yaos[0] = 初爻 (bottom), yaos[5] = 上爻 (top)
   const yaos: Yao[] = []
   for (let i = 0; i < 6; i++) {
-    const bit = hex.code[5 - i] // reverse: map from display order to yaos array order
+    const bit = hex.code[i] // code 已是从下到上，与 yaos 顺序一致
     const yang = bit === '1'
     yaos.push({
       yang,
@@ -113,7 +113,7 @@ function goBack() {
     <!-- 头部 -->
     <div class="flex items-center justify-between">
       <button @click="goBack" class="text-gray-500 hover:text-gray-700 text-sm">&larr; 返回</button>
-      <h2 class="text-lg font-bold text-gray-700">六十四卦象库</h2>
+      <h2 class="text-lg font-bold text-gray-700">卦库</h2>
       <div class="w-12"></div>
     </div>
 
@@ -177,7 +177,7 @@ function goBack() {
 
           <!-- 卦画 (CSS 简化线条) -->
           <div class="flex flex-col items-center mb-1.5 space-y-0.5">
-            <div v-for="(bit, bi) in hex.code" :key="bi">
+            <div v-for="(bit, bi) in hex.code.split('').reverse()" :key="bi">
               <div v-if="bit === '1'" class="h-1 bg-gray-700 rounded w-10 my-0.5"></div>
               <div v-else class="flex gap-0.5 justify-center my-0.5">
                 <div class="h-1 bg-gray-700 rounded w-[18px]"></div>
@@ -229,7 +229,7 @@ function goBack() {
             <div class="p-5 space-y-4">
               <!-- 卦画 -->
               <div class="flex flex-col items-center py-2 space-y-0.5">
-                <div v-for="(bit, bi) in selectedHexagram.code" :key="bi">
+                <div v-for="(bit, bi) in selectedHexagram.code.split('').reverse()" :key="bi">
                   <div v-if="bit === '1'" class="h-1.5 bg-gray-700 rounded w-24 my-0.5"></div>
                   <div v-else class="flex gap-1 justify-center my-0.5">
                     <div class="h-1.5 bg-gray-700 rounded w-[44px]"></div>

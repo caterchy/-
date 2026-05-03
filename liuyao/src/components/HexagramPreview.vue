@@ -22,7 +22,7 @@ const POSITION_LABELS = ['初', '二', '三', '四', '五', '上']
           <div
             v-for="(yao, i) in [...result.original.yaos].reverse()"
             :key="i"
-            class="flex items-center justify-between py-0.5 px-2"
+            class="flex items-center gap-1 py-0.5 px-2"
             :class="yao.yao.changing ? 'bg-amber-50/60 rounded' : ''"
           >
             <div class="flex items-center gap-2">
@@ -34,7 +34,7 @@ const POSITION_LABELS = ['初', '二', '三', '四', '五', '上']
                 {{ yao.yao.yang ? '⚊' : '⚋' }}
               </span>
             </div>
-            <div class="w-6 text-center">
+            <div class="w-4 text-center">
               <!-- Changing marker -->
               <span v-if="yao.yao.changing" class="text-[#c00] font-bold text-sm">{{ yao.yao.yang ? '○' : '×' }}</span>
             </div>
@@ -51,7 +51,7 @@ const POSITION_LABELS = ['初', '二', '三', '四', '五', '上']
           <div
             v-for="(yao, i) in [...result.changed.yaos].reverse()"
             :key="i"
-            class="flex items-center justify-between py-0.5 px-2"
+            class="flex items-center gap-1 py-0.5 px-2"
           >
             <div class="flex items-center gap-2">
               <!-- Position label -->
@@ -62,7 +62,7 @@ const POSITION_LABELS = ['初', '二', '三', '四', '五', '上']
                 {{ yao.yao.yang ? '⚊' : '⚋' }}
               </span>
             </div>
-            <div class="w-6 text-center"></div>
+            <div class="w-4 text-center"></div>
           </div>
         </div>
       </div>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePaipanStore } from '../stores/paipan'
 import type { PaipanNote } from '../types'
 import DateTimeInfo from '../components/DateTimeInfo.vue'
 import TraditionalView from '../components/TraditionalView.vue'
 import InfoToggles from '../components/InfoToggles.vue'
-import { encodeResultToUrl, formatResultText, exportAsText, exportAsJson } from '../composables/useExport'
+import { encodeResultToUrl, decodeResultFromUrl, formatResultText, exportAsText, exportAsJson } from '../composables/useExport'
 import HexagramYijingText from '../components/HexagramYijingText.vue'
 
 const router = useRouter()
@@ -15,11 +15,19 @@ const store = usePaipanStore()
 const result = computed(() => store.currentResult)
 const displayOptions = computed(() => store.displayOptions)
 
+onMounted(() => {
+  const decoded = decodeResultFromUrl()
+  if (decoded) {
+    store.setResult(decoded)
+  }
+})
+
 const editingNote = ref(false)
 const editQuestion = ref('')
 const editResult = ref('')
 const editTags = ref<string[]>([])
 const showYijing = ref(false)
+const sanheExpanded = ref(false)
 
 const presetTags = ['已验证', '待验证', '错卦', '参考', '教学'] as const
 
@@ -153,19 +161,55 @@ function downloadJson() {
 
     <!-- 第4模块：可选信息 -->
     <div class="space-y-3">
-      <!-- 三合局 -->
-      <div v-if="displayOptions.showSanhe && result.sanhe && result.sanhe.length > 0" class="card px-3 py-2 text-sm space-y-1">
-        <div class="font-bold text-gray-700 mb-1">三合局:</div>
-        <div v-for="(sh, si) in result.sanhe" :key="si" class="pl-2 border-l-2" :class="sh.completed ? 'border-green-400' : 'border-gray-300'">
-          <span :class="{ 'text-green-700 font-bold': sh.completed, 'text-gray-500': !sh.completed }">
-            {{ sh.name }}
-            <span v-if="sh.completed" class="text-green-600">（已形成）</span>
-            <span v-else class="text-gray-400">（缺{{ sh.missingZhis.join('、') }}）</span>
-          </span>
-          <div v-if="sh.sources.length > 0" class="text-xs text-gray-400 mt-0.5">
-            <span v-for="(src, si2) in sh.sources" :key="si2">
-              {{ src.zhi }}:{{ src.source }}<span v-if="si2 < sh.sources.length - 1">，</span>
+      <!-- 三合局（可折叠） -->
+      <div v-if="displayOptions.showSanhe && result.sanhe && result.sanhe.length > 0" class="card px-3 py-2">
+        <button
+          @click="sanheExpanded = !sanheExpanded"
+          class="w-full flex items-center justify-between"
+          style="background: none; border: none; cursor: pointer;"
+        >
+          <span class="font-bold text-gray-700 text-sm">三合局:</span>
+          <span class="text-gray-400 text-xs">{{ sanheExpanded ? '收起' : '展开' }}</span>
+        </button>
+
+        <!-- 收起时：只显示第一个已完成的三合局 -->
+        <div v-if="!sanheExpanded" class="mt-1">
+          <div v-for="(sh, si) in result.sanhe" :key="si">
+            <div v-if="sh.completed" class="pl-2 border-l-2 border-green-400 text-sm">
+              <span class="text-green-700 font-bold">{{ sh.name }}（已形成）</span>
+              <div v-if="sh.sources.length > 0" class="text-xs text-gray-400 mt-0.5">
+                <span v-for="(src, si2) in sh.sources" :key="si2">
+                  {{ src.zhi }}:{{ src.source }}<span v-if="si2 < sh.sources.length - 1">，</span>
+                </span>
+              </div>
+            </div>
+            <div v-if="!sh.completed && si === 0" class="mt-1 text-xs text-gray-400">
+              <span v-for="(sh2, si3) in result.sanhe.filter(s => !s.completed)" :key="si3">
+                {{ sh2.name }}（缺{{ sh2.missingZhis.join('、') }}）<span v-if="si3 < result.sanhe.filter(s => !s.completed).length - 1">；</span>
+              </span>
+            </div>
+          </div>
+          <div v-if="!result.sanhe.some(s => s.completed)" class="text-xs text-gray-400 mt-1">
+            暂无已形成的三合局
+          </div>
+          <div v-if="result.sanhe.filter(s => s.completed).length > 1" class="text-xs text-gray-400 mt-1">
+            ...还有 {{ result.sanhe.filter(s => s.completed).length - 1 }} 个
+          </div>
+        </div>
+
+        <!-- 展开时：显示全部 -->
+        <div v-else class="mt-1 space-y-1">
+          <div v-for="(sh, si) in result.sanhe" :key="si" class="pl-2 border-l-2 text-sm" :class="sh.completed ? 'border-green-400' : 'border-gray-300'">
+            <span :class="{ 'text-green-700 font-bold': sh.completed, 'text-gray-500': !sh.completed }">
+              {{ sh.name }}
+              <span v-if="sh.completed" class="text-green-600">（已形成）</span>
+              <span v-else class="text-gray-400">（缺{{ sh.missingZhis.join('、') }}）</span>
             </span>
+            <div v-if="sh.sources.length > 0" class="text-xs text-gray-400 mt-0.5">
+              <span v-for="(src, si2) in sh.sources" :key="si2">
+                {{ src.zhi }}:{{ src.source }}<span v-if="si2 < sh.sources.length - 1">，</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -263,7 +307,7 @@ function downloadJson() {
     </div>
     <hr class="divider" />
 
-    <!-- 第5模块：导出操作 -->
+    <!-- 第5模块：导出操作 + 反馈 -->
     <div class="flex flex-wrap gap-2">
       <button
         @click="copyShareLink"
@@ -293,6 +337,15 @@ function downloadJson() {
       >
         导出 JSON
       </button>
+      <a
+        href="https://v.wjx.cn/vm/rMUYN4L.aspx"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex-1 min-w-[80px] bg-orange-500 text-white px-3 py-2 text-sm hover:bg-orange-600 transition-colors text-center no-underline"
+        :style="{ borderRadius: 'var(--radius)' }"
+      >
+        意见反馈
+      </a>
     </div>
 
     <!-- 返回 -->

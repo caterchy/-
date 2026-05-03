@@ -1,23 +1,54 @@
-import type { PaipanResult } from '../types'
+import type { PaipanResult, Yao, YaoType } from '../types'
 import { formatBaZi } from '../engine/bazi'
+import { buildPaipanResult } from '../engine/paipan'
 import { saveAs } from 'file-saver'
 
-/** 将排盘结果编码为 URL 参数 */
+/** 最小化编码：将 6 爻 yang/changing 状态编码为二进制字符串（各 6 位，共 12 字符） */
 export function encodeResultToUrl(result: PaipanResult): string {
   const baseUrl = window.location.origin + window.location.pathname
-  const encoded = encodeURIComponent(JSON.stringify(result))
-  return `${baseUrl}?result=${encoded}`
+  const yangBits = result.original.yaos.map(y => y.yao.yang ? '1' : '0').join('')
+  const changingBits = result.original.yaos.map(y => y.yao.changing ? '1' : '0').join('')
+  const timestamp = result.timestamp.toISOString()
+  const note = result.note?.question || ''
+  return `${baseUrl}?y=${yangBits}&c=${changingBits}&t=${encodeURIComponent(timestamp)}&n=${encodeURIComponent(note)}`
 }
 
-/** 从 URL 参数解码排盘结果 */
+/** 从 URL 参数解码排盘结果并重建完整 PaipanResult */
 export function decodeResultFromUrl(): PaipanResult | null {
   try {
     const params = new URLSearchParams(window.location.search)
+
+    // 优先尝试新紧凑格式 (?y=&c=&t=)
+    const yangBits = params.get('y')
+    const changingBits = params.get('c')
+    const timestampStr = params.get('t')
+    if (yangBits && changingBits && timestampStr && yangBits.length === 6 && changingBits.length === 6) {
+      const yaos: Yao[] = yangBits.split('').map((bit, i) => {
+        const yang = bit === '1'
+        const changing = changingBits[i] === '1'
+        const type: YaoType = yang
+          ? (changing ? '老阳' : '少阳')
+          : (changing ? '老阴' : '少阴')
+        return { yang, changing, type }
+      })
+      const date = new Date(timestampStr)
+      const result = buildPaipanResult(yaos, date)
+      const noteStr = params.get('n')
+      if (noteStr) {
+        result.note = { question: noteStr, result: '', tags: [] }
+      }
+      return result
+    }
+
+    // 降级尝试旧格式 (?result=JSON)
     const encoded = params.get('result')
-    if (!encoded) return null
-    const parsed = JSON.parse(decodeURIComponent(encoded))
-    parsed.timestamp = new Date(parsed.timestamp)
-    return parsed
+    if (encoded) {
+      const parsed = JSON.parse(decodeURIComponent(encoded))
+      parsed.timestamp = new Date(parsed.timestamp)
+      return parsed
+    }
+
+    return null
   } catch {
     return null
   }

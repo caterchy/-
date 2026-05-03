@@ -66,17 +66,10 @@ function formatTime(date: Date): string {
 const currentTerm = getCurrentSolarTerm(props.timestamp)
 const daysSinceTerm = getDaysSinceSolarTerm(props.timestamp)
 
-let jieqiText: string
-if (currentTerm) {
-  jieqiText = `${currentTerm.name}（${currentTerm.month}月${currentTerm.day}日 ${String(currentTerm.hour).padStart(2, '0')}:${String(currentTerm.minute).padStart(2, '0')}）`
-} else {
-  jieqiText = '—'
-}
-
 const nextJieQi = getNextJieQi(props.timestamp)
 
 function formatTermDate(date: Date): string {
-  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+  return `${date.getMonth() + 1}月${date.getDate()}日`
 }
 
 
@@ -123,93 +116,87 @@ function getShenshaDisplayName(name: ShenShaType): string {
   }
   return map[name] || name
 }
+
+/** 当前可见的神煞列表 */
+const visibleShensha = computed(() => {
+  if (shenshaExpanded.value) {
+    return collapsibleShensha.value
+  }
+  return collapsibleShensha.value.slice(0, 3)
+})
 </script>
 
 <template>
   <div class="card p-4">
     <div class="space-y-3">
       <!-- 第一行：起卦时间 -->
-      <div class="grid grid-cols-2 gap-3 text-sm">
-        <div>
-          <!-- 左列: 起卦时间 -->
-          <span class="text-gray-500">起卦时间:</span>
-          <template v-if="!readonly">
-            <button @click="toggleEdit" class="ml-2 font-medium hover:text-[#8b0000] transition-colors cursor-pointer" :title="isEditing ? '保存' : '修改'">
-              {{ isEditing ? '✏️' : '' }}
-            </button>
-            <input
-              v-if="isEditing"
-              v-model="dateTimeStr"
-              type="datetime-local"
-              @change="onDateTimeChange"
-              class="ml-2 border rounded px-2 py-1 text-sm"
-              style="border-color: var(--border-color);"
-            />
-            <span v-else class="ml-2 font-medium">{{ formatTime(timestamp) }}</span>
-          </template>
+      <div class="text-sm">
+        <span class="text-gray-500">起卦时间：</span>
+        <template v-if="!readonly">
+          <button @click="toggleEdit" class="ml-2 font-medium hover:text-[#8b0000] transition-colors cursor-pointer" :title="isEditing ? '保存' : '修改'">
+            {{ isEditing ? '✏️' : '' }}
+          </button>
+          <input
+            v-if="isEditing"
+            v-model="dateTimeStr"
+            type="datetime-local"
+            @change="onDateTimeChange"
+            class="ml-2 border rounded px-2 py-1 text-sm"
+            style="border-color: var(--border-color);"
+          />
           <span v-else class="ml-2 font-medium">{{ formatTime(timestamp) }}</span>
-        </div>
-        <div class="text-right">
-          <!-- 右列: 节气 + 下一个节气 -->
-          <div>
-            <span class="text-gray-500">节气:</span>
-            <span class="ml-2 text-green-700 font-medium">{{ jieqiText }}</span>
-            <span v-if="currentTerm && daysSinceTerm > 0" class="ml-1 text-xs text-gray-400">
-              (已过 {{ daysSinceTerm }} 天)
-            </span>
-          </div>
-          <div v-if="nextJieQi" class="mt-1">
-            <span class="text-gray-500">下一个节气：</span>
-            <span class="text-green-700 font-medium">{{ nextJieQi.name }} {{ formatTermDate(nextJieQi.date) }}</span>
-            <span class="ml-1 text-xs text-gray-400">（还有 {{ nextJieQi.daysUntil }} 天）</span>
-          </div>
-        </div>
+        </template>
+        <span v-else class="ml-2 font-medium">{{ formatTime(timestamp) }}</span>
       </div>
-      <!-- 第二行: 干支 (full-width) -->
+      <!-- 第二行：干支 -->
       <div class="text-sm">
         <span class="text-gray-500">干支：</span>
-        <span class="ml-2 font-medium">{{ bazi.nian.gan }}{{ bazi.nian.zhi }}年
+        <span class="font-medium">{{ bazi.nian.gan }}{{ bazi.nian.zhi }}年
           {{ bazi.yue.gan }}{{ bazi.yue.zhi }}月
           {{ bazi.ri.gan }}{{ bazi.ri.zhi }}日
           {{ bazi.shi.gan }}{{ bazi.shi.zhi }}时</span>
       </div>
-
-      <!-- 旬空/卦身/世身 -->
-      <div class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
-        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-          <span><span class="text-gray-500">旬空：</span><span class="font-bold text-red-600">{{ kongwangText }}</span></span>
-          <span><span class="text-gray-500">卦身：</span><span class="font-bold text-blue-600">{{ guaShenText }}</span></span>
-          <span><span class="text-gray-500">世身：</span><span class="font-bold text-purple-600">{{ shiShenText }}</span></span>
+      <!-- 第三行：节气 -->
+      <div class="text-sm flex flex-wrap gap-x-3">
+        <div v-if="currentTerm">
+          <span class="text-gray-500">节气：</span>
+          <span class="ml-2 font-medium text-gray-700">{{ currentTerm.name }}（{{ currentTerm.month }}月{{ currentTerm.day }}日）</span>
+          <span class="ml-0.5 text-xs text-gray-500">已过{{ daysSinceTerm }}天</span>
+        </div>
+        <div v-if="nextJieQi">
+          <span class="font-medium text-gray-700">{{ nextJieQi.name }}（{{ formatTermDate(nextJieQi.date) }}）</span>
+          <span class="ml-0.5 text-xs text-gray-500">还有{{ nextJieQi.daysUntil }}天</span>
         </div>
       </div>
-
-      <!-- 第三组：神煞（可折叠） -->
+      <!-- 第二行：旬空/卦身/世身 -->
       <div class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
-        <!-- 折叠切换 -->
-        <button
-          @click="shenshaExpanded = !shenshaExpanded"
-          class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-          style="background: none; border: none; padding: 0; cursor: pointer;"
-        >
-          <span v-if="!shenshaExpanded">展开 神煞</span>
-          <span v-else>收起 神煞</span>
-        </button>
-
-        <!-- 3列网格（收起时显示前3个，展开时显示全部） -->
-        <div v-if="collapsibleShensha.length > 0" class="mt-2 grid grid-cols-3 gap-x-3 gap-y-1">
-          <template v-for="s in collapsibleShensha" :key="s.name">
-            <div v-if="shenshaExpanded || collapsibleShensha.indexOf(s) < 3" class="text-sm px-2 py-0.5" style="color: #666;">
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <span><span class="text-gray-500">旬空：</span><span class="font-bold">{{ kongwangText }}</span></span>
+          <span><span class="text-gray-500">卦身：</span><span class="font-bold">{{ guaShenText }}</span></span>
+          <span><span class="text-gray-500">世身：</span><span class="font-bold">{{ shiShenText }}</span></span>
+        </div>
+      </div>
+      <!-- 第三行：神煞 -->
+      <div class="border-t pt-3" :style="{ borderColor: 'var(--border-color)' }">
+        <div class="text-sm">
+          <span class="text-gray-700 font-medium">神煞</span>
+          <button
+            @click="shenshaExpanded = !shenshaExpanded"
+            class="text-xs text-gray-400 hover:text-gray-600 ml-1"
+            style="background: none; border: none; padding: 0; cursor: pointer;"
+          >
+            {{ shenshaExpanded ? '收起' : '展开' }}
+          </button>
+        </div>
+        <template v-if="collapsibleShensha.length > 0">
+          <div class="grid grid-cols-3 gap-x-3 gap-y-1 mt-1 text-sm">
+            <div v-for="s in visibleShensha" :key="s.name" style="color: #666;">
               <span class="text-gray-500">{{ getShenshaDisplayName(s.name) }}：</span>
               <span>{{ s.value }}</span>
             </div>
-          </template>
-        </div>
-        <div v-if="!shenshaExpanded && collapsibleShensha.length > 3" class="mt-1 text-sm text-gray-400">
-          ...
-        </div>
-        <div v-if="collapsibleShensha.length === 0" class="mt-1 text-sm text-gray-400">
-          无
-        </div>
+          </div>
+        </template>
+        <span v-else class="text-sm text-gray-400">—</span>
       </div>
     </div>
   </div>

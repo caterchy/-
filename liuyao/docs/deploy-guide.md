@@ -9,91 +9,40 @@ cd liuyao
 npm run build
 ```
 
-构建产物位于 `dist/` 目录，可直接部署到任何静态文件服务器。
+构建产物位于 `dist/` 目录。
 
-> ⚠️ **SPA 路由要求**：部署路径必须为 `/liuyao/`（与 `vite.config.ts` 中 `base: '/liuyao/'` 一致）。若部署到其他路径，需同步修改 `vite.config.ts` 的 `base` 和 `src/router/index.ts` 中 `createWebHistory()` 的 base 参数，确保两者一致，否则页面将白屏。
+## 部署
 
----
+应用已配置为根路径部署（`base: '/'`），域名 `https://caterliuyao.keytoix.vip/` 指向静态资源即可。
 
-## 方案一：Gitee Pages（推荐 · 国内免翻墙）
-
-[Gitee（码云）](https://gitee.com) 是国内版 GitHub，Pages 服务在国内可直接访问。
-
-### 步骤
-
-1. 在 https://gitee.com 注册账号并登录
-2. 创建新仓库（例如 `liuyao`），**仓库名必须与 Pages 空间名一致**
-3. 将代码推送到 Gitee 仓库：
-   ```bash
-   git remote add gitee https://gitee.com/<你的用户名>/liuyao.git
-   git push gitee main
-   ```
-4. 进入仓库 → 服务 → Gitee Pages
-5. 选择部署分支 `main`，部署目录 `/`
-6. 点击"启动"
-7. 完成后访问 `https://<你的用户名>.gitee.io/liuyao` 即可
-
-> 注意：Gitee Pages 免费版需手动点击"更新"才能同步最新代码。首次部署需实名认证。
-
----
-
-## 方案二：阿里云 OSS 静态网站托管（国内免翻墙）
-
-如果有阿里云账号，OSS 对象存储可托管静态网站，速度快且稳定。
-
-### 步骤
-
-1. 登录阿里云 OSS 控制台，创建 Bucket（地域选中国大陆）
-2. Bucket 配置：
-   - 权限：`公共读`
-   - 静态网站：开启，默认首页填 `index.html`
-3. 运行 `npm run build`
-4. 将 `dist/` 下所有文件上传到 Bucket
-5. 绑定自定义域名（可选，推荐，否则域名较长）
-6. 访问 `https://<Bucket名>.oss-cn-<地域>.aliyuncs.com`
-
----
-
-## 方案三：腾讯云静态网站托管（国内免翻墙）
-
-### 步骤
-
-1. 登录腾讯云控制台 → 静态网站托管
-2. 创建环境
-3. 运行 `npm run build`
-4. 将 `dist/` 下所有文件上传
-5. 系统生成默认访问域名，可直接打开
-
----
-
-## 方案四：局域网临时访问（最简单 · 适合内部测试）
-
-不需要部署到互联网，适合给同局域网内的同事或朋友临时使用。
-
-### 步骤
-
-1. 在本机项目目录下运行：
+### 方式一：推送到 GitHub
 
 ```bash
-npm run dev -- --host
+git add .
+git commit -m "..."
+git push
 ```
 
-2. 终端会显示本机局域网 IP 地址，例如 `http://192.168.1.100:5173`
-3. 同一局域网内的其他人打开手机或电脑浏览器，访问该地址即可
+### 方式二：手动上传
 
-### 注意事项
-
-- 确保防火墙允许 5173 端口（Vite 默认端口）
-- 手机和电脑需连接同一个 Wi-Fi（同一局域网）
-- 本机关闭终端后服务即停止
+将 `dist/` 目录下的文件上传到静态服务器的根目录。
 
 ---
 
-## 方案对比
+## Nginx 配置参考（SPA 路由）
 
-| 方案 | 费用 | 难度 | 免翻墙 | 适用范围 |
-|------|------|------|--------|---------|
-| Gitee Pages | 免费 | 低 | ✅ | 正式发布 |
-| 阿里云 OSS | 按量付费（很低） | 中 | ✅ | 正式发布 |
-| 腾讯云静态托管 | 按量付费（很低） | 中 | ✅ | 正式发布 |
-| 局域网访问 | 免费 | 最低 | ✅ | 临时内部测试 |
+静态域名使用 Nginx 时，需配置 fallback 到 `index.html`，否则刷新页面会 404：
+
+```nginx
+server {
+    listen 80;
+    server_name caterliuyao.keytoix.vip;
+
+    root /path/to/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
