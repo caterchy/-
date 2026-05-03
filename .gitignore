@@ -29,5 +29,14 @@ dist-ssr
 # 网络下载参考文件（截图、素材等，不纳入版本管理）
 /web/
 
-# Agent 工作树（自动生成，不纳入版本管理）
-/.claude/worktrees/
+# Claude Agent 系统配置（不上传 GitHub）
+.claude/
+CLAUDE.md
+
+# AI 任务追踪与反馈文件（仅本地使用）
+task-feedback/
+docs/templates/
+docs/user-test-report*.md
+
+# 旧版本重复目录（已迁至根目录）
+/liuyao/
