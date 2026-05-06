@@ -52,24 +52,14 @@ const rows = Array.from({ length: 6 }, (_, i) => {
   }
 })
 
-/** 六冲: 八纯卦 (palacePos === 0) */
+/** 六冲: 八纯卦 + 天雷无妄 + 雷天大壮 */
 function hasLiuChong(gua: GuaDetail): boolean {
-  return gua.palacePos === 0
+  return gua.palacePos === 0 || gua.name === '天雷无妄' || gua.name === '雷天大壮'
 }
 
-/** 六合: 八组特殊上下卦组合 */
+/** 六合: 八组特殊卦 */
 function hasLiuHe(gua: GuaDetail): boolean {
-  const pairs: Array<[string, string]> = [
-    ['乾', '坤'], // 否
-    ['坤', '乾'], // 泰
-    ['兑', '艮'], // 咸
-    ['艮', '兑'], // 损
-    ['坎', '离'], // 既济
-    ['离', '坎'], // 未济
-    ['震', '巽'], // 恒
-    ['巽', '震'], // 益
-  ]
-  return pairs.some(([u, l]) => gua.upper === u && gua.lower === l)
+  return ['天地否', '水泽节', '山火贲', '雷地豫', '火山旅', '地雷复', '地天泰', '泽水困'].includes(gua.name)
 }
 </script>
 
