@@ -73,6 +73,15 @@ const { displayOptions } = storeToRefs(store)
         />
         <span class="text-sm">相刑</span>
       </label>
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          :checked="displayOptions.showChong"
+          @change="store.updateDisplayOptions({ showChong: ($event.target as HTMLInputElement).checked })"
+          class="accent-[#8b0000]"
+        />
+        <span class="text-sm">相冲</span>
+      </label>
     </div>
   </div>
 </template>

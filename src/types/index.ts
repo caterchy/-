@@ -153,6 +153,8 @@ export interface HeResult {
   zhis: DiZhi[]
   /** 口诀 */
   description: string
+  /** 是否与日辰月辰/动爻/世应相关 */
+  active?: boolean
 }
 
 /** 三刑结果 */
@@ -163,6 +165,22 @@ export interface XingResult {
   zhis: DiZhi[]
   /** 口诀 */
   description: string
+  /** 是否与日辰月辰/动爻/世应相关 */
+  active?: boolean
+}
+
+/** 六冲结果 */
+export interface ChongResult {
+  /** 名称，如"子午冲" */
+  name: string
+  /** 地支一 */
+  z1: DiZhi
+  /** 地支二 */
+  z2: DiZhi
+  /** 口诀 */
+  description: string
+  /** 是否与日辰月辰/动爻/世应相关 */
+  active: boolean
 }
 
 /** 三合局结果 */
@@ -244,6 +262,8 @@ export interface PaipanResult {
   he?: HeResult[]
   /** 三刑（可选） */
   xing?: XingResult[]
+  /** 六冲（可选） */
+  chong?: ChongResult[]
   /** 反吟伏吟（可选） */
   fanyin?: FanYinFuYin
   /** 起卦方式（可选，向后兼容旧数据） */
@@ -263,6 +283,7 @@ export interface DisplayOptions {
   showSanhe: boolean
   showHe: boolean
   showXing: boolean
+  showChong: boolean
   showGuaci: boolean
   showFanyin: boolean
   showShensha: boolean

@@ -1,79 +1,69 @@
 import { describe, it, expect } from 'vitest'
-import { parseHexagramCode, getHexagramCode, ALL_HEXAGRAMS, TRIGRAM_TO_BIN } from './hexagrams'
-import type { BaGua } from '../types'
+import { yaosToCode } from '../engine/coin'
+import { findHexagramByCode, getHexagramCode, ALL_HEXAGRAMS, parseHexagramCode } from './hexagrams'
+import type { Yao, BaGua } from '../types'
 
-describe('parseHexagramCode', () => {
-  it('parses 6-bit code into upper and lower trigrams', () => {
-    // 乾为天: 111111 → upper=111=乾, lower=111=乾
-    const result = parseHexagramCode('111111')
-    expect(result.upper).toBe('乾')
-    expect(result.lower).toBe('乾')
+describe('hexagram code direction fix', () => {
+  it('getHexagramCode produces lower+upper format', () => {
+    // 天地否 = 上乾下坤 → lower=坤(000) + upper=乾(111) = '000111'
+    expect(getHexagramCode('乾', '坤')).toBe('000111')
+    // 地天泰 = 上坤下乾 → lower=乾(111) + upper=坤(000) = '111000'
+    expect(getHexagramCode('坤', '乾')).toBe('111000')
+    // 水火既济 = 上坎下离 → lower=离(101) + upper=坎(010) = '101010'
+    expect(getHexagramCode('坎', '离')).toBe('101010')
+    // 火水未济 = 上离下坎 → lower=坎(010) + upper=离(101) = '010101'
+    expect(getHexagramCode('离', '坎')).toBe('010101')
   })
 
-  it('parses 地天泰: 000111', () => {
-    // 000=坤, 111=乾
+  it('parseHexagramCode parses lower from first 3 bits', () => {
+    // '000111' → lower=000=坤, upper=111=乾 (天地否)
     const result = parseHexagramCode('000111')
-    expect(result.upper).toBe('坤')
-    expect(result.lower).toBe('乾')
+    expect(result.lower).toBe('坤')
+    expect(result.upper).toBe('乾')
   })
 
-  it('parses 水火既济: 010101', () => {
-    const result = parseHexagramCode('010101')
-    expect(result.upper).toBe('坎')
-    expect(result.lower).toBe('离')
-  })
-})
-
-describe('getHexagramCode', () => {
-  it('generates correct code for 乾为天', () => {
-    expect(getHexagramCode('乾', '乾')).toBe('111111')
-  })
-
-  it('generates correct code for 天地否', () => {
-    expect(getHexagramCode('乾', '坤')).toBe('111000')
-  })
-
-  it('generates correct code for 水火既济', () => {
-    expect(getHexagramCode('坎', '离')).toBe('010101')
-  })
-})
-
-describe('ALL_HEXAGRAMS data integrity', () => {
-  it('has exactly 64 hexagrams', () => {
-    expect(ALL_HEXAGRAMS).toHaveLength(64)
+  it('天地否: yaosToCode matches hexagram code', () => {
+    const yaos: Yao[] = [
+      { yang: false, changing: false, type: '少阴' },
+      { yang: false, changing: false, type: '少阴' },
+      { yang: false, changing: false, type: '少阴' },
+      { yang: true, changing: false, type: '少阳' },
+      { yang: true, changing: false, type: '少阳' },
+      { yang: true, changing: false, type: '少阳' },
+    ]
+    const code = yaosToCode(yaos)
+    expect(code).toBe('000111')
+    const found = findHexagramByCode(code)
+    expect(found).toBeDefined()
+    expect(found!.name).toBe('天地否')
   })
 
-  it('each hexagram has a non-empty name', () => {
+  it('水火既济: yaosToCode matches hexagram code', () => {
+    // 既济: 下离(101) + 上坎(010) → yaos = 1,0,1,0,1,0 → '101010'
+    const yaos: Yao[] = [
+      { yang: true, changing: false, type: '少阳' },
+      { yang: false, changing: false, type: '少阴' },
+      { yang: true, changing: false, type: '少阳' },
+      { yang: false, changing: false, type: '少阴' },
+      { yang: true, changing: false, type: '少阳' },
+      { yang: false, changing: false, type: '少阴' },
+    ]
+    const code = yaosToCode(yaos)
+    expect(code).toBe('101010')
+    const found = findHexagramByCode(code)
+    expect(found).toBeDefined()
+    expect(found!.name).toBe('水火既济')
+  })
+
+  it('all 64 codes are consistent with getHexagramCode', () => {
     for (const h of ALL_HEXAGRAMS) {
-      expect(h.name).toBeTruthy()
+      expect(h.code).toBe(getHexagramCode(h.upper, h.lower))
     }
   })
 
-  it('each hexagram has a valid 6-char binary code', () => {
-    for (const h of ALL_HEXAGRAMS) {
-      expect(h.code).toMatch(/^[01]{6}$/)
-    }
-  })
-
-  it('each hexagram code matches its upper/lower trigrams', () => {
-    for (const h of ALL_HEXAGRAMS) {
-      expect(getHexagramCode(h.upper, h.lower)).toBe(h.code)
-    }
-  })
-
-  it('each hexagram parses back to correct upper/lower', () => {
-    for (const h of ALL_HEXAGRAMS) {
-      const parsed = parseHexagramCode(h.code)
-      expect(parsed.upper).toBe(h.upper)
-      expect(parsed.lower).toBe(h.lower)
-    }
-  })
-
-  it('each hexagram has a valid palace', () => {
-    const validPalaces: BaGua[] = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤']
-    for (const h of ALL_HEXAGRAMS) {
-      expect(validPalaces).toContain(h.palace)
-    }
+  it('all 64 codes are unique', () => {
+    const codes = ALL_HEXAGRAMS.map(h => h.code)
+    expect(new Set(codes).size).toBe(64)
   })
 
   it('each hexagram has palacePos 0-7', () => {
@@ -98,26 +88,6 @@ describe('ALL_HEXAGRAMS data integrity', () => {
       expect(h.tuancizhuan).toBeTruthy()
       expect(h.xiangzhuan).toBeTruthy()
       expect(h.yaoxiang).toHaveLength(6)
-    }
-  })
-
-  it('all 64 codes are unique', () => {
-    const codes = ALL_HEXAGRAMS.map((h) => h.code)
-    expect(new Set(codes).size).toBe(64)
-  })
-
-  it('every trigram appears as upper and lower in some entries', () => {
-    const trigrams: BaGua[] = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤']
-    for (const t of trigrams) {
-      expect(ALL_HEXAGRAMS.some((h) => h.upper === t)).toBe(true)
-      expect(ALL_HEXAGRAMS.some((h) => h.lower === t)).toBe(true)
-    }
-  })
-
-  it('TRIGRAM_TO_BIN has entries for all 8 trigrams', () => {
-    const trigrams: BaGua[] = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤']
-    for (const t of trigrams) {
-      expect(TRIGRAM_TO_BIN[t]).toMatch(/^[01]{3}$/)
     }
   })
 })

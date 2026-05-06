@@ -1,4 +1,4 @@
-import type { DiZhi, HeResult, XingResult } from '../types'
+import type { DiZhi, HeResult, XingResult, ChongResult } from '../types'
 
 /**
  * 六合规则
@@ -16,27 +16,19 @@ const HE_RULES: { z1: DiZhi; z2: DiZhi; wuxing: string; description: string }[] 
 /**
  * 计算六合
  *
- * 六合规则：
- *   子丑合土、寅亥合木、卯戌合火、辰酉合金、巳申合水、午未合土
+ * 返回全部六条六合规则，标记与 activeZhis 相关的条目
  *
- * @param zhis 所有爻的地支列表
- * @returns 匹配到的六合结果数组
+ * @param activeZhis 日辰、月辰、动爻、世应等涉及的地支集合
+ * @returns 全部六合规则数组
  */
-export function calcHe(zhis: DiZhi[]): HeResult[] {
-  const results: HeResult[] = []
-
-  for (const rule of HE_RULES) {
-    if (zhis.includes(rule.z1) && zhis.includes(rule.z2)) {
-      results.push({
-        name: `${rule.z1}${rule.z2}合`,
-        wuxing: rule.wuxing,
-        zhis: [rule.z1, rule.z2],
-        description: rule.description,
-      })
-    }
-  }
-
-  return results
+export function calcHe(activeZhis: Set<DiZhi>): HeResult[] {
+  return HE_RULES.map(rule => ({
+    name: `${rule.z1}${rule.z2}合`,
+    wuxing: rule.wuxing,
+    zhis: [rule.z1, rule.z2],
+    description: rule.description,
+    active: activeZhis.has(rule.z1) || activeZhis.has(rule.z2),
+  }))
 }
 
 /**
@@ -73,44 +65,60 @@ const ZI_XING_RULES: { zhi: DiZhi; description: string }[] = [
 /**
  * 计算三刑
  *
- * 三刑规则：
- *   无恩之刑：寅刑巳、巳刑申、申刑寅（循环）
- *   恃势之刑：丑刑戌、戌刑未、未刑丑（循环）
- *   无礼之刑：子刑卯、卯刑子
- *   自刑：辰刑辰、午刑午、酉刑酉、亥刑亥
+ * 返回全部三刑组和自刑条目，标记与 activeZhis 相关的条目
  *
- * @param zhis 所有爻的地支列表
- * @returns 匹配到的三刑结果数组
+ * @param activeZhis 日辰、月辰、动爻、世应等涉及的地支集合
+ * @returns 全部三刑规则数组
  */
-export function calcXing(zhis: DiZhi[]): XingResult[] {
+export function calcXing(activeZhis: Set<DiZhi>): XingResult[] {
   const results: XingResult[] = []
 
-  // 检查三刑组（无恩、恃势、无礼）：组内至少出现2个地支即构成刑
   for (const group of XING_GROUPS) {
-    const matchedZhis = group.zhis.filter(z => zhis.includes(z))
-    if (matchedZhis.length >= 2) {
-      results.push({
-        name: group.name,
-        zhis: matchedZhis,
-        description: group.description,
-      })
-    }
+    results.push({
+      name: group.name,
+      zhis: [...group.zhis],
+      description: group.description,
+      active: group.zhis.some(z => activeZhis.has(z)),
+    })
   }
 
-  // 检查自刑：同一地支出现2次或以上
   for (const rule of ZI_XING_RULES) {
-    const count = zhis.filter(z => z === rule.zhi).length
-    if (count >= 2) {
-      // 避免重复添加同一口诀
-      if (!results.some(r => r.name === '自刑' && r.zhis[0] === rule.zhi)) {
-        results.push({
-          name: '自刑',
-          zhis: [rule.zhi, rule.zhi],
-          description: rule.description,
-        })
-      }
-    }
+    // 不用去重，每个自刑地支独立展示
+    results.push({
+      name: '自刑',
+      zhis: [rule.zhi],
+      description: rule.description,
+      active: activeZhis.has(rule.zhi),
+    })
   }
 
   return results
+}
+
+/**
+ * 六冲规则
+ */
+const CHONG_RULES: { z1: DiZhi; z2: DiZhi; description: string }[] = [
+  { z1: '子', z2: '午', description: '子午相冲' },
+  { z1: '丑', z2: '未', description: '丑未相冲' },
+  { z1: '寅', z2: '申', description: '寅申相冲' },
+  { z1: '卯', z2: '酉', description: '卯酉相冲' },
+  { z1: '辰', z2: '戌', description: '辰戌相冲' },
+  { z1: '巳', z2: '亥', description: '巳亥相冲' },
+]
+
+/**
+ * 计算六冲
+ *
+ * @param activeZhis 日辰、月辰、动爻、世应等涉及的地支集合
+ * @returns 全部六冲规则数组
+ */
+export function calcChong(activeZhis: Set<DiZhi>): ChongResult[] {
+  return CHONG_RULES.map(rule => ({
+    name: `${rule.z1}${rule.z2}冲`,
+    z1: rule.z1,
+    z2: rule.z2,
+    description: rule.description,
+    active: activeZhis.has(rule.z1) || activeZhis.has(rule.z2),
+  }))
 }

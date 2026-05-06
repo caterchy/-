@@ -30,6 +30,7 @@ const showYijing = ref(false)
 const sanheExpanded = ref(false)
 const heExpanded = ref(false)
 const xingExpanded = ref(false)
+const chongExpanded = ref(false)
 
 const presetTags = ['已验证', '待验证', '错卦', '参考', '教学'] as const
 
@@ -178,8 +179,8 @@ function downloadJson() {
     </div>
     <hr class="divider" />
 
-    <!-- 相合（可折叠） -->
-    <div v-if="displayOptions.showHe && result.he?.length" class="card px-3 py-2">
+    <!-- 相合（可折叠）— 显示全部六合规则 -->
+    <div v-if="displayOptions.showHe" class="card px-3 py-2">
       <button
         @click="heExpanded = !heExpanded"
         class="w-full flex items-center justify-between"
@@ -189,24 +190,26 @@ function downloadJson() {
         <span class="text-gray-400 text-xs">{{ heExpanded ? '收起' : '展开' }}</span>
       </button>
 
-      <!-- 收起时：显示摘要 -->
-      <div v-if="!heExpanded" class="mt-1 text-sm text-gray-600">
-        {{ result.he.map(h => h.description).join('、') }}
+      <!-- 收起时：摘要 -->
+      <div v-if="!heExpanded" class="mt-1 text-sm">
+        <template v-for="(h, hi) in result.he" :key="hi">
+          <span :class="h.active ? 'text-green-700 font-medium' : 'text-gray-400'">{{ h.description }}</span>
+          <span v-if="hi < result.he.length - 1" class="text-gray-300">、</span>
+        </template>
       </div>
 
-      <!-- 展开时：显示全部 -->
+      <!-- 展开时：全部列表 -->
       <div v-else class="mt-1 space-y-1">
-        <div v-for="(h, hi) in result.he" :key="hi" class="pl-2 border-l-2 border-blue-400 text-sm">
-          <span class="text-blue-700 font-bold">{{ h.description }}</span>
-          <div class="text-xs text-gray-400 mt-0.5">
-            参与地支：{{ h.zhis.join('、') }}
-          </div>
+        <div v-for="(h, hi) in result.he" :key="hi" class="pl-2 border-l-2 text-sm" :class="h.active ? 'border-green-400' : 'border-gray-200'">
+          <span :class="h.active ? 'text-green-700 font-bold' : 'text-gray-500'">{{ h.description }}</span>
+          <span v-if="h.active" class="text-green-500 text-xs ml-1">✓</span>
+          <div class="text-xs text-gray-400 mt-0.5">合化{{ h.wuxing }} — {{ h.zhis.join('、') }}</div>
         </div>
       </div>
     </div>
 
-    <!-- 相刑（可折叠） -->
-    <div v-if="displayOptions.showXing && result.xing?.length" class="card px-3 py-2">
+    <!-- 相刑（可折叠）— 显示全部三刑规则 -->
+    <div v-if="displayOptions.showXing" class="card px-3 py-2">
       <button
         @click="xingExpanded = !xingExpanded"
         class="w-full flex items-center justify-between"
@@ -216,21 +219,52 @@ function downloadJson() {
         <span class="text-gray-400 text-xs">{{ xingExpanded ? '收起' : '展开' }}</span>
       </button>
 
-      <!-- 收起时：显示摘要 -->
-      <div v-if="!xingExpanded" class="mt-1 text-sm text-gray-600">
-        {{ result.xing.map(x => x.name).join('、') }}
+      <!-- 收起时：摘要 -->
+      <div v-if="!xingExpanded" class="mt-1 text-sm">
+        <template v-for="(x, xi) in result.xing" :key="xi">
+          <span :class="x.active ? 'text-green-700 font-medium' : 'text-gray-400'">{{ x.name }}</span>
+          <span v-if="xi < result.xing.length - 1" class="text-gray-300">、</span>
+        </template>
       </div>
 
-      <!-- 展开时：显示全部 -->
+      <!-- 展开时：全部列表 -->
       <div v-else class="mt-1 space-y-1">
-        <div v-for="(x, xi) in result.xing" :key="xi" class="pl-2 border-l-2 border-red-400 text-sm">
-          <span class="text-red-700 font-bold">{{ x.name }}</span>
-          <div class="text-xs text-gray-400 mt-0.5">
-            参与地支：{{ x.zhis.join('、') }}
+        <div v-for="(x, xi) in result.xing" :key="xi" class="pl-2 border-l-2 text-sm" :class="x.active ? 'border-green-400' : 'border-gray-200'">
+          <span :class="x.active ? 'text-green-700 font-bold' : 'text-gray-500'">{{ x.name }}</span>
+          <span v-if="x.active" class="text-green-500 text-xs ml-1">✓</span>
+          <div class="text-xs mt-0.5" :class="x.active ? 'text-green-600' : 'text-gray-400'">
+            {{ x.zhis.join('、') }}
           </div>
-          <div class="text-xs text-gray-500 mt-0.5 italic">
-            {{ x.description }}
-          </div>
+          <div class="text-xs text-gray-400 mt-0.5">{{ x.description }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 相冲（可折叠）— 显示全部六冲规则 -->
+    <div v-if="displayOptions.showChong" class="card px-3 py-2">
+      <button
+        @click="chongExpanded = !chongExpanded"
+        class="w-full flex items-center justify-between"
+        style="background: none; border: none; cursor: pointer;"
+      >
+        <span class="font-bold text-gray-700 text-sm">相冲:</span>
+        <span class="text-gray-400 text-xs">{{ chongExpanded ? '收起' : '展开' }}</span>
+      </button>
+
+      <!-- 收起时：摘要 -->
+      <div v-if="!chongExpanded" class="mt-1 text-sm">
+        <template v-for="(c, ci) in result.chong" :key="ci">
+          <span :class="c.active ? 'text-green-700 font-medium' : 'text-gray-400'">{{ c.description }}</span>
+          <span v-if="ci < result.chong.length - 1" class="text-gray-300">、</span>
+        </template>
+      </div>
+
+      <!-- 展开时：全部列表 -->
+      <div v-else class="mt-1 space-y-1">
+        <div v-for="(c, ci) in result.chong" :key="ci" class="pl-2 border-l-2 text-sm" :class="c.active ? 'border-green-400' : 'border-gray-200'">
+          <span :class="c.active ? 'text-green-700 font-bold' : 'text-gray-500'">{{ c.description }}</span>
+          <span v-if="c.active" class="text-green-500 text-xs ml-1">✓</span>
+          <div class="text-xs text-gray-400 mt-0.5">{{ c.z1 }}、{{ c.z2 }}</div>
         </div>
       </div>
     </div>

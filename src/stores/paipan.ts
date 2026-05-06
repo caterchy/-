@@ -12,6 +12,7 @@ export const usePaipanStore = defineStore('paipan', () => {
     showSanhe: true,
     showHe: false,
     showXing: false,
+    showChong: false,
     showGuaci: true,
     showFanyin: true,
     showShensha: true,
