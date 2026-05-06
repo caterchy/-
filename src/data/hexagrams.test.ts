@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { yaosToCode } from '../engine/coin'
 import { findHexagramByCode, getHexagramCode, ALL_HEXAGRAMS, parseHexagramCode } from './hexagrams'
-import type { Yao, BaGua } from '../types'
+import type { Yao } from '../types'
 
 describe('hexagram code direction fix', () => {
   it('getHexagramCode produces lower+upper format', () => {

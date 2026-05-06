@@ -180,7 +180,7 @@ function downloadJson() {
     <hr class="divider" />
 
     <!-- 相合（可折叠）— 显示全部六合规则 -->
-    <div v-if="displayOptions.showHe" class="card px-3 py-2">
+    <div v-if="displayOptions.showHe && result.he?.length" class="card px-3 py-2">
       <button
         @click="heExpanded = !heExpanded"
         class="w-full flex items-center justify-between"
@@ -209,7 +209,7 @@ function downloadJson() {
     </div>
 
     <!-- 相刑（可折叠）— 显示全部三刑规则 -->
-    <div v-if="displayOptions.showXing" class="card px-3 py-2">
+    <div v-if="displayOptions.showXing && result.xing?.length" class="card px-3 py-2">
       <button
         @click="xingExpanded = !xingExpanded"
         class="w-full flex items-center justify-between"
@@ -241,7 +241,7 @@ function downloadJson() {
     </div>
 
     <!-- 相冲（可折叠）— 显示全部六冲规则 -->
-    <div v-if="displayOptions.showChong" class="card px-3 py-2">
+    <div v-if="displayOptions.showChong && result.chong?.length" class="card px-3 py-2">
       <button
         @click="chongExpanded = !chongExpanded"
         class="w-full flex items-center justify-between"
