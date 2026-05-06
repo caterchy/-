@@ -14,9 +14,9 @@ interface YaoSelection {
 
 const OPTIONS: YaoSelection[] = [
   { yang: true, changing: false, label: '少阳 (⚊) 二正一背' },
-  { yang: true, changing: true, label: '老阳 (⚊○) 三正' },
+  { yang: true, changing: true, label: '老阳 (⚊○) 三背' },
   { yang: false, changing: false, label: '少阴 (⚋) 一正两背' },
-  { yang: false, changing: true, label: '老阴 (⚋×) 三背' },
+  { yang: false, changing: true, label: '老阴 (⚋×) 三正' },
 ]
 
 const POSITION_NAMES = ['初爻', '二爻', '三爻', '四爻', '五爻', '上爻']
@@ -27,6 +27,13 @@ const confirmed = ref(false)
 const currentSelection = computed(() => selections.value[currentStep.value])
 
 const allDone = computed(() => confirmed.value)
+
+function yaoStateClass(forwardIdx: number): string {
+  if (allDone.value) return 'text-[#8b0000] font-bold'
+  if (forwardIdx < currentStep.value) return 'text-green-600 bg-green-50'
+  if (forwardIdx === currentStep.value) return 'text-[#8b0000] font-bold'
+  return 'text-gray-300'
+}
 
 function selectOption(idx: number) {
   if (currentStep.value >= 6) return
@@ -80,10 +87,18 @@ function submit() {
           v-for="(sel, i) in [...selections].reverse()"
           :key="i"
           class="flex items-center justify-between w-full max-w-[220px] mx-auto"
+          :class="!allDone && selections.length - 1 - i === currentStep ? 'bg-amber-50 rounded-lg' : ''"
         >
           <div class="flex items-center gap-2">
-            <span class="text-xs text-gray-400 w-8 text-right">{{ POSITION_NAMES[selections.length - 1 - i] }}</span>
-            <span class="font-mono text-lg shrink-0" style="color: #333; letter-spacing: 0.1em;">
+            <span
+              class="text-xs w-8 text-right"
+              :class="allDone ? 'font-bold text-[#8b0000]' : 'text-gray-400'"
+            >{{ POSITION_NAMES[selections.length - 1 - i] }}</span>
+            <span
+              class="font-mono text-lg shrink-0"
+              :class="yaoStateClass(selections.length - 1 - i)"
+              style="letter-spacing: 0.1em;"
+            >
               {{ OPTIONS[sel].yang ? '⚊' : '⚋' }}
             </span>
           </div>

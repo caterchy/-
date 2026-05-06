@@ -10,6 +10,8 @@ export const usePaipanStore = defineStore('paipan', () => {
   const history = ref<PaipanResult[]>([])
   const displayOptions = ref<DisplayOptions>({
     showSanhe: true,
+    showHe: false,
+    showXing: false,
     showGuaci: true,
     showFanyin: true,
     showShensha: true,

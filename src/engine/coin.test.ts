@@ -7,12 +7,12 @@ describe('tossCoin', () => {
     vi.restoreAllMocks()
   })
 
-  it('returns 老阳 when all 3 are yang (random < 0.5)', () => {
+  it('returns 老阴 when all 3 are yang (random < 0.5)', () => {
     vi.spyOn(Math, 'random')
       .mockReturnValueOnce(0.4)
       .mockReturnValueOnce(0.4)
       .mockReturnValueOnce(0.4)
-    expect(tossCoin()).toEqual({ yang: true, changing: true, type: '老阳' })
+    expect(tossCoin()).toEqual({ yang: false, changing: true, type: '老阴' })
   })
 
   it('returns 少阳 when 2 yang, 1 yin', () => {
@@ -31,12 +31,12 @@ describe('tossCoin', () => {
     expect(tossCoin()).toEqual({ yang: false, changing: false, type: '少阴' })
   })
 
-  it('returns 老阴 when all 3 are yin (random >= 0.5)', () => {
+  it('returns 老阳 when all 3 are yin (random >= 0.5)', () => {
     vi.spyOn(Math, 'random')
       .mockReturnValueOnce(0.6)
       .mockReturnValueOnce(0.6)
       .mockReturnValueOnce(0.6)
-    expect(tossCoin()).toEqual({ yang: false, changing: true, type: '老阴' })
+    expect(tossCoin()).toEqual({ yang: true, changing: true, type: '老阳' })
   })
 })
 
@@ -47,13 +47,13 @@ describe('autoCast', () => {
 
   it('returns 6 yaos', () => {
     vi.spyOn(Math, 'random')
-      // 老阳
+      // 老阴（三正）
       .mockReturnValueOnce(0.4).mockReturnValueOnce(0.4).mockReturnValueOnce(0.4)
       // 少阳
       .mockReturnValueOnce(0.4).mockReturnValueOnce(0.4).mockReturnValueOnce(0.6)
       // 少阴
       .mockReturnValueOnce(0.4).mockReturnValueOnce(0.6).mockReturnValueOnce(0.6)
-      // 老阴
+      // 老阳（三背）
       .mockReturnValueOnce(0.6).mockReturnValueOnce(0.6).mockReturnValueOnce(0.6)
       // 少阳
       .mockReturnValueOnce(0.4).mockReturnValueOnce(0.4).mockReturnValueOnce(0.6)
@@ -62,10 +62,10 @@ describe('autoCast', () => {
 
     const result = autoCast()
     expect(result).toHaveLength(6)
-    expect(result[0]).toEqual({ yang: true, changing: true, type: '老阳' })
+    expect(result[0]).toEqual({ yang: false, changing: true, type: '老阴' })
     expect(result[1]).toEqual({ yang: true, changing: false, type: '少阳' })
     expect(result[2]).toEqual({ yang: false, changing: false, type: '少阴' })
-    expect(result[3]).toEqual({ yang: false, changing: true, type: '老阴' })
+    expect(result[3]).toEqual({ yang: true, changing: true, type: '老阳' })
     expect(result[4]).toEqual({ yang: true, changing: false, type: '少阳' })
     expect(result[5]).toEqual({ yang: false, changing: false, type: '少阴' })
   })

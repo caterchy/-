@@ -19,15 +19,15 @@ function randomCoin(): boolean {
 /** 根据正面数量确定爻 */
 function getYaoFromCount(yangCount: number): Yao {
   switch (yangCount) {
-    case 3: // 三正 → 老阳(变)
-      return { yang: true, changing: true, type: '老阳' }
+    case 3: // 三正 → 老阴(变)
+      return { yang: false, changing: true, type: '老阴' }
     case 2: // 二正一反 → 少阳(不变)
       return { yang: true, changing: false, type: '少阳' }
     case 1: // 一正二反 → 少阴(不变)
       return { yang: false, changing: false, type: '少阴' }
-    case 0: // 三反 → 老阴(变)
+    case 0: // 三反 → 老阳(变)
     default:
-      return { yang: false, changing: true, type: '老阴' }
+      return { yang: true, changing: true, type: '老阳' }
   }
 }
 

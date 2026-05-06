@@ -13,7 +13,7 @@ const store = usePaipanStore()
 const showResult = ref(false)
 const resultRef = ref<HTMLElement | null>(null)
 
-function onDivinationComplete(yaos: Yao[], method: DivinationMethod) {
+function onDivinationComplete(yaos: Yao[], method: DivinationMethod, questionType?: string, questionText?: string, gender?: string) {
   let result
   if (method === 'auto') {
     result = generatePaipanResult()
@@ -21,6 +21,9 @@ function onDivinationComplete(yaos: Yao[], method: DivinationMethod) {
     result = buildPaipanResult(yaos)
   }
   result.method = method
+  if (questionType) result.questionType = questionType
+  if (questionText) result.questionText = questionText
+  if (gender) result.gender = gender
   store.setResult(result)
   store.saveToHistory(result)
   showResult.value = true

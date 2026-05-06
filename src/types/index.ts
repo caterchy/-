@@ -143,6 +143,28 @@ export interface GuaDetail {
   yaoxiang?: string[]
 }
 
+/** 六合结果 */
+export interface HeResult {
+  /** 名称，如"子丑合" */
+  name: string
+  /** 合化五行 */
+  wuxing: string
+  /** 参与地支 */
+  zhis: DiZhi[]
+  /** 口诀 */
+  description: string
+}
+
+/** 三刑结果 */
+export interface XingResult {
+  /** 名称，如"无恩之刑" */
+  name: string
+  /** 参与地支 */
+  zhis: DiZhi[]
+  /** 口诀 */
+  description: string
+}
+
 /** 三合局结果 */
 export interface SanHeResult {
   /** 三合局名称，如"申子辰合水局" */
@@ -218,17 +240,29 @@ export interface PaipanResult {
   kongwang: KongWang
   /** 三合局（可选，含完整局和未完成局） */
   sanhe?: SanHeResult[]
+  /** 六合（可选） */
+  he?: HeResult[]
+  /** 三刑（可选） */
+  xing?: XingResult[]
   /** 反吟伏吟（可选） */
   fanyin?: FanYinFuYin
   /** 起卦方式（可选，向后兼容旧数据） */
   method?: DivinationMethod
   /** 备注 */
   note?: PaipanNote
+  /** 问题类型 */
+  questionType?: string
+  /** 具体问题文本 */
+  questionText?: string
+  /** 性别 */
+  gender?: string
 }
 
 /** 显示开关配置 */
 export interface DisplayOptions {
   showSanhe: boolean
+  showHe: boolean
+  showXing: boolean
   showGuaci: boolean
   showFanyin: boolean
   showShensha: boolean

@@ -10,7 +10,7 @@ import { divineByTime, divineByHexagram } from '../engine/divination'
 import { ALL_HEXAGRAMS } from '../data/hexagrams'
 
 const emit = defineEmits<{
-  complete: [yaos: Yao[], method: DivinationMethod]
+  complete: [yaos: Yao[], method: DivinationMethod, questionType?: string, questionText?: string, gender?: string]
 }>()
 
 // --- Common header state ---
@@ -132,27 +132,31 @@ function setHexagram(code: string) {
 }
 
 // --- Methods ---
+function emitComplete(yaos: Yao[], method: DivinationMethod) {
+  emit('complete', yaos, method, questionType.value, questionText.value, gender.value)
+}
+
 function onCoinComplete(yaos: Yao[]) {
-  emit('complete', yaos, 'coin')
+  emitComplete(yaos, 'coin')
 }
 
 function onManualComplete(yaos: Yao[]) {
-  emit('complete', yaos, 'manual')
+  emitComplete(yaos, 'manual')
 }
 
 function onNumberComplete(yaos: Yao[]) {
-  emit('complete', yaos, 'number')
+  emitComplete(yaos, 'number')
 }
 
 function onCharacterComplete(yaos: Yao[]) {
-  emit('complete', yaos, 'character')
+  emitComplete(yaos, 'character')
 }
 
 function startAuto() {
   isLoading.value = true
   setTimeout(() => {
     isLoading.value = false
-    emit('complete', [], 'auto')
+    emitComplete([], 'auto')
   }, 800)
 }
 
@@ -161,14 +165,14 @@ function startTime() {
   const date = new Date(dateTimeStr.value)
   if (isNaN(date.getTime())) return
   const yaos = divineByTime(date)
-  emit('complete', yaos, 'time')
+  emitComplete(yaos, 'time')
 }
 
 function startHexagram() {
   if (!selectedHexagram.value) return
   const dongPositions = dongYaos.value.length > 0 ? dongYaos.value : undefined
   const yaos = divineByHexagram(selectedHexagram.value, dongPositions)
-  emit('complete', yaos, 'hexagram')
+  emitComplete(yaos, 'hexagram')
 }
 
 // --- Validation ---

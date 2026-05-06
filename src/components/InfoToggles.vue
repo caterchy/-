@@ -55,6 +55,24 @@ const { displayOptions } = storeToRefs(store)
         />
         <span class="text-sm">暗动/日破</span>
       </label>
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          :checked="displayOptions.showHe"
+          @change="store.updateDisplayOptions({ showHe: ($event.target as HTMLInputElement).checked })"
+          class="accent-[#8b0000]"
+        />
+        <span class="text-sm">相合</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          :checked="displayOptions.showXing"
+          @change="store.updateDisplayOptions({ showXing: ($event.target as HTMLInputElement).checked })"
+          class="accent-[#8b0000]"
+        />
+        <span class="text-sm">相刑</span>
+      </label>
     </div>
   </div>
 </template>

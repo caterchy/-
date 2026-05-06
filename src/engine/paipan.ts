@@ -7,6 +7,7 @@ import { getLiuShen } from './liushou'
 import { calcKongWang, isKong } from './kongwang'
 import { getShenShaForYao } from './shensha'
 import { detectSanHe } from './sanhe'
+import { calcHe, calcXing } from './xinghe'
 import { detectFanYinFuYin } from './fanyin'
 import { calcFuShen } from './fushen'
 import { detectAnDong } from './andong'
@@ -26,8 +27,8 @@ export function generatePaipanResult(): PaipanResult {
 /**
  * 生成排盘结果（使用给定的爻）
  */
-export function buildPaipanResult(yaos: Yao[]): PaipanResult {
-  const date = new Date()
+export function buildPaipanResult(yaos: Yao[], time?: Date): PaipanResult {
+  const date = time ?? new Date()
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 
   // 1. 起卦时间八字
@@ -133,7 +134,7 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
       const changedAllGans = [changedGanInner, changedGanInner, changedGanInner, changedGanOuter, changedGanOuter, changedGanOuter]
       const changedAllZhis = [...changedZhiInner, ...changedZhiOuter]
 
-      const changedGongWuxing: WuXing = GUA_WU_XING[changedInfo.palace]
+      const changedGongWuxing: WuXing = GUA_WU_XING[originalInfo.palace]
       const changedYaosDetail: YaoDetail[] = changedYaos.map((y, i) => {
         const wuxing = ZHI_WU_XING_NAJA[changedAllZhis[i]]
         return {
@@ -185,7 +186,12 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
   // 10. 三合局（含完整局和未完成局）
   const sanheResults = detectSanHe(originalYaos, bazi, { shiIndex: shi, yingIndex: ying })
 
-  // 11. 反吟伏吟
+  // 11. 六合
+  const zhis = originalYaos.map(y => y.najia.zhi)
+  const heResults = calcHe(zhis)
+  const xingResults = calcXing(zhis)
+
+  // 12. 反吟伏吟
   let fanyin = null
   if (changed) {
     fanyin = detectFanYinFuYin(original.yaos, changed.yaos)
@@ -199,6 +205,8 @@ export function buildPaipanResult(yaos: Yao[]): PaipanResult {
     changed: changed || undefined,
     kongwang: kongwang || { xun: '', zhi1: '戌', zhi2: '亥' },
     sanhe: sanheResults.length > 0 ? sanheResults : undefined,
+    he: heResults.length > 0 ? heResults : undefined,
+    xing: xingResults.length > 0 ? xingResults : undefined,
     fanyin: fanyin || undefined,
   }
 

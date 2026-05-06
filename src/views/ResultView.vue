@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePaipanStore } from '../stores/paipan'
 import type { PaipanNote } from '../types'
 import DateTimeInfo from '../components/DateTimeInfo.vue'
 import TraditionalView from '../components/TraditionalView.vue'
 import InfoToggles from '../components/InfoToggles.vue'
-import { encodeResultToUrl, formatResultText, exportAsText, exportAsJson } from '../composables/useExport'
+import { encodeResultToUrl, decodeResultFromUrl, formatResultText, exportAsText, exportAsJson } from '../composables/useExport'
 import HexagramYijingText from '../components/HexagramYijingText.vue'
 
 const router = useRouter()
@@ -15,12 +15,21 @@ const store = usePaipanStore()
 const result = computed(() => store.currentResult)
 const displayOptions = computed(() => store.displayOptions)
 
+onMounted(() => {
+  const decoded = decodeResultFromUrl()
+  if (decoded) {
+    store.setResult(decoded)
+  }
+})
+
 const editingNote = ref(false)
 const editQuestion = ref('')
 const editResult = ref('')
 const editTags = ref<string[]>([])
 const showYijing = ref(false)
 const sanheExpanded = ref(false)
+const heExpanded = ref(false)
+const xingExpanded = ref(false)
 
 const presetTags = ['已验证', '待验证', '错卦', '参考', '教学'] as const
 
@@ -113,6 +122,23 @@ function downloadJson() {
   </div>
 
   <div v-else>
+    <!-- 第0模块：占卜信息 -->
+    <div v-if="result.questionType || result.questionText || result.gender" class="card px-4 py-3 text-sm text-gray-700">
+      <div class="flex flex-wrap items-center gap-x-1">
+        <template v-if="result.questionType">
+          <span><span class="font-medium text-gray-500">问题类型：</span>{{ result.questionType }}</span>
+        </template>
+        <span v-if="result.questionType && (result.questionText || result.gender)" class="text-gray-300 mx-0.5">|</span>
+        <template v-if="result.questionText">
+          <span><span class="font-medium text-gray-500">问题：</span>{{ result.questionText }}</span>
+        </template>
+        <span v-if="result.questionText && result.gender" class="text-gray-300 mx-0.5">|</span>
+        <template v-if="result.gender">
+          <span><span class="font-medium text-gray-500">性别：</span>{{ result.gender }}</span>
+        </template>
+      </div>
+    </div>
+
     <!-- 第1模块：时间信息（只读） -->
     <DateTimeInfo
       :bazi="result.bazi"
@@ -151,6 +177,63 @@ function downloadJson() {
       </div>
     </div>
     <hr class="divider" />
+
+    <!-- 相合（可折叠） -->
+    <div v-if="displayOptions.showHe && result.he?.length" class="card px-3 py-2">
+      <button
+        @click="heExpanded = !heExpanded"
+        class="w-full flex items-center justify-between"
+        style="background: none; border: none; cursor: pointer;"
+      >
+        <span class="font-bold text-gray-700 text-sm">相合:</span>
+        <span class="text-gray-400 text-xs">{{ heExpanded ? '收起' : '展开' }}</span>
+      </button>
+
+      <!-- 收起时：显示摘要 -->
+      <div v-if="!heExpanded" class="mt-1 text-sm text-gray-600">
+        {{ result.he.map(h => h.description).join('、') }}
+      </div>
+
+      <!-- 展开时：显示全部 -->
+      <div v-else class="mt-1 space-y-1">
+        <div v-for="(h, hi) in result.he" :key="hi" class="pl-2 border-l-2 border-blue-400 text-sm">
+          <span class="text-blue-700 font-bold">{{ h.description }}</span>
+          <div class="text-xs text-gray-400 mt-0.5">
+            参与地支：{{ h.zhis.join('、') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 相刑（可折叠） -->
+    <div v-if="displayOptions.showXing && result.xing?.length" class="card px-3 py-2">
+      <button
+        @click="xingExpanded = !xingExpanded"
+        class="w-full flex items-center justify-between"
+        style="background: none; border: none; cursor: pointer;"
+      >
+        <span class="font-bold text-gray-700 text-sm">相刑:</span>
+        <span class="text-gray-400 text-xs">{{ xingExpanded ? '收起' : '展开' }}</span>
+      </button>
+
+      <!-- 收起时：显示摘要 -->
+      <div v-if="!xingExpanded" class="mt-1 text-sm text-gray-600">
+        {{ result.xing.map(x => x.name).join('、') }}
+      </div>
+
+      <!-- 展开时：显示全部 -->
+      <div v-else class="mt-1 space-y-1">
+        <div v-for="(x, xi) in result.xing" :key="xi" class="pl-2 border-l-2 border-red-400 text-sm">
+          <span class="text-red-700 font-bold">{{ x.name }}</span>
+          <div class="text-xs text-gray-400 mt-0.5">
+            参与地支：{{ x.zhis.join('、') }}
+          </div>
+          <div class="text-xs text-gray-500 mt-0.5 italic">
+            {{ x.description }}
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- 第4模块：可选信息 -->
     <div class="space-y-3">
