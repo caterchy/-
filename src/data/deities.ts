@@ -304,35 +304,34 @@ export function getTianXi(yueZhi: DiZhi): DiZhi {
 }
 
 /**
- * 皇恩：按日干计算
- * 甲→酉, 乙→戌, 丙→亥, 丁→丑, 戊→子, 己→丑, 庚→寅, 辛→卯, 壬→辰, 癸→巳
+ * 皇恩：按月支计算（六阴辰）
+ * 正月起未，顺行六阴辰（未、酉、亥、丑、卯、巳），每阴辰管两个月
+ * 正→未, 二→酉, 三→亥, 四→丑, 五→卯, 六→巳, 七→未, 八→酉, 九→亥, 十→丑, 十一→卯, 十二→巳
  */
-export function getHuangEn(riGan: TianGan): DiZhi {
-  const map: Record<TianGan, DiZhi> = {
-    '甲': '酉', '乙': '戌', '丙': '亥', '丁': '丑', '戊': '子',
-    '己': '丑', '庚': '寅', '辛': '卯', '壬': '辰', '癸': '巳',
-  }
-  return map[riGan]
+const YIN_CHEN: DiZhi[] = ['未', '酉', '亥', '丑', '卯', '巳']
+export function getHuangEn(yueZhi: DiZhi): DiZhi {
+  const idx = DI_ZHI.indexOf(yueZhi)
+  return YIN_CHEN[(idx - 2 + 12) % 6]
 }
 
 /**
- * 天德：按月支计算（渊海子平）
- * 寅→丁, 卯→申, 辰→壬, 巳→辛, 午→亥, 未→甲, 申→癸, 酉→寅, 戌→丙, 亥→乙, 子→巳, 丑→庚
+ * 天德：按月支计算（渊海子平 + 八卦纳甲）
+ * 寅→丁巳, 卯→乙申, 辰→壬亥, 巳→辛酉, 午→壬亥, 未→甲寅, 申→癸子, 酉→丙寅, 戌→丙午, 亥→乙卯, 子→辛巳, 丑→庚申
  * 返回干支字符串
  */
 export function getTianDe(yueZhi: DiZhi): string {
   const map: Record<DiZhi, { gan: TianGan; zhi: DiZhi }> = {
     '寅': { gan: '丁', zhi: '巳' },
-    '卯': { gan: '甲', zhi: '申' },
+    '卯': { gan: '乙', zhi: '申' },
     '辰': { gan: '壬', zhi: '亥' },
     '巳': { gan: '辛', zhi: '酉' },
     '午': { gan: '壬', zhi: '亥' },
     '未': { gan: '甲', zhi: '寅' },
     '申': { gan: '癸', zhi: '子' },
-    '酉': { gan: '庚', zhi: '寅' },
+    '酉': { gan: '丙', zhi: '寅' },
     '戌': { gan: '丙', zhi: '午' },
     '亥': { gan: '乙', zhi: '卯' },
-    '子': { gan: '丁', zhi: '巳' },
+    '子': { gan: '辛', zhi: '巳' },
     '丑': { gan: '庚', zhi: '申' },
   }
   const result = map[yueZhi]

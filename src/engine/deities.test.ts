@@ -87,34 +87,36 @@ describe('getTianXi', () => {
 
 describe('getHuangEn', () => {
   it.each([
-    ['甲', '酉'],
-    ['乙', '戌'],
-    ['丙', '亥'],
-    ['丁', '丑'],
-    ['戊', '子'],
-    ['己', '丑'],
-    ['庚', '寅'],
-    ['辛', '卯'],
-    ['壬', '辰'],
-    ['癸', '巳'],
-  ] as [TianGan, DiZhi][])('dayGan %s returns %s', (gan, expected) => {
-    expect(getHuangEn(gan)).toBe(expected)
+    ['寅', '未'],   // 正月
+    ['卯', '酉'],   // 二月
+    ['辰', '亥'],   // 三月
+    ['巳', '丑'],   // 四月
+    ['午', '卯'],   // 五月
+    ['未', '巳'],   // 六月
+    ['申', '未'],   // 七月
+    ['酉', '酉'],   // 八月
+    ['戌', '亥'],   // 九月
+    ['亥', '丑'],   // 十月
+    ['子', '卯'],   // 十一月
+    ['丑', '巳'],   // 十二月
+  ] as [DiZhi, DiZhi][])('monthZhi %s returns %s', (yueZhi, expected) => {
+    expect(getHuangEn(yueZhi)).toBe(expected)
   })
 })
 
 describe('getTianDe', () => {
   it.each([
     ['寅', '丁巳'],
-    ['卯', '甲申'],
+    ['卯', '乙申'],
     ['辰', '壬亥'],
     ['巳', '辛酉'],
     ['午', '壬亥'],
     ['未', '甲寅'],
     ['申', '癸子'],
-    ['酉', '庚寅'],
+    ['酉', '丙寅'],
     ['戌', '丙午'],
     ['亥', '乙卯'],
-    ['子', '丁巳'],
+    ['子', '辛巳'],
     ['丑', '庚申'],
   ] as [DiZhi, string][])('monthZhi %s returns %s', (zhi, expected) => {
     expect(getTianDe(zhi)).toBe(expected)

@@ -122,8 +122,8 @@ export function calcTimeShenSha(
   // 5. 天喜 (月支-based)
   result.push({ name: '天喜', value: getTianXi(yueZhi) })
 
-  // 6. 皇恩 (日干-based)
-  result.push({ name: '皇恩', value: getHuangEn(riGan) })
+  // 6. 皇恩 (月支-based, 六阴辰)
+  result.push({ name: '皇恩', value: getHuangEn(yueZhi) })
 
   // 7. 天德 (月支-based, output as gan-zhi pair)
   result.push({ name: '天德', value: getTianDe(yueZhi) })
